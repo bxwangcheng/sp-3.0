@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/verdant/Downloads/SP++3.0/sp++3.0/constants.h
+
+/Users/verdant/Downloads/SP++3.0/sp++3.0/statistics.cpp
+statistics.h
+/Users/verdant/Downloads/SP++3.0/sp++3.0/statistics.h
+
+/Users/verdant/Downloads/SP++3.0/sp++3.0/statistics.h
+vector.h
+/Users/verdant/Downloads/SP++3.0/sp++3.0/vector.h
+
+/Users/verdant/Downloads/SP++3.0/sp++3.0/usingdeclare.h
+
+/Users/verdant/Downloads/SP++3.0/sp++3.0/vector.h
+iostream
+-
+cassert
+-
+cmath
+-
+complex
+-
+usingdeclare.h
+/Users/verdant/Downloads/SP++3.0/sp++3.0/usingdeclare.h
+constants.h
+/Users/verdant/Downloads/SP++3.0/sp++3.0/constants.h
+
