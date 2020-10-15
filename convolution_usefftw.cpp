@@ -32,32 +32,32 @@
  *****************************************************************************/
 #include "convolution_usefftw.h"
 
-using namespace splab;
+namespace splab {
 
 /**
  * Fast convolution by FFT.
  */
-template<typename Type>
-Vector<Type> fastConvFFTW( const Vector<Type> &xn, const Vector<Type> &yn )
-{
-    int M = xn.dim(),
-        N = yn.dim(),
-        L = M + N - 1;
+    template<typename Type>
+    Vector<Type> fastConvFFTW( const Vector<Type> &xn, const Vector<Type> &yn )
+    {
+        int M = xn.dim(),
+                N = yn.dim(),
+                L = M + N - 1;
 
-    Vector<Type> zn(L),
-                 xnPadded = wextend( xn, N-1, "right", "zpd" ),
-                 ynPadded = wextend( yn, M-1, "right", "zpd" );
+        Vector<Type> zn(L),
+                xnPadded = wextend( xn, N-1, "right", "zpd" ),
+                ynPadded = wextend( yn, M-1, "right", "zpd" );
 
-    Vector< complex<Type> > Xk( L/2+1 ),
-                            Yk( L/2+1 ),
-                            Zk( L/2+1 );
-    fftw( xnPadded, Xk );
-    fftw( ynPadded, Yk );
-    Zk = Xk * Yk;
-    ifftw( Zk, zn );
+        Vector< complex<Type> > Xk( L/2+1 ),
+                Yk( L/2+1 ),
+                Zk( L/2+1 );
+        fftw( xnPadded, Xk );
+        fftw( ynPadded, Yk );
+        Zk = Xk * Yk;
+        ifftw( Zk, zn );
 
-    return zn;
-}
+        return zn;
+    }
 
 
 //    void fastConv( const Vector<double> &xn, const Vector<double> &yn,
@@ -101,3 +101,4 @@ Vector<Type> fastConvFFTW( const Vector<Type> &xn, const Vector<Type> &yn )
 //        fftw_destroy_plan( r2cP );
 //        fftw_destroy_plan( c2rP );
 //    }
+}

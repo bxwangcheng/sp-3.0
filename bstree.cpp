@@ -32,81 +32,80 @@
  *****************************************************************************/
 #include "bstree.h"
 
-using namespace splab;
+namespace splab {
+    /**
+    * constructors and destructor
+    */
+    template <typename Object, typename Key>
+    BSTree<Object, Key>::BSTree() : root(NULL)
+    { }
 
-/**
- * constructors and destructor
- */
-template <typename Object, typename Key>
-BSTree<Object, Key>::BSTree() : root(NULL)
-{ }
-
-template <typename Object, typename Key>
-BSTree<Object, Key>::~BSTree()
-{
-    destroy(root);
-}
+    template <typename Object, typename Key>
+    BSTree<Object, Key>::~BSTree()
+    {
+        destroy(root);
+    }
 
 
 /**
  * If the tree is empty, return true.
  */
-template <typename Object, typename Key>
-inline bool BSTree<Object, Key>::isEmpty()
-{
-    return ( root == NULL );
-}
+    template <typename Object, typename Key>
+    inline bool BSTree<Object, Key>::isEmpty()
+    {
+        return ( root == NULL );
+    }
 
 
 /**
  * Make the tree empty.
  */
-template <typename Object, typename Key>
-inline void BSTree<Object, Key>::makeEmpty()
-{
-    destroy( root );
-}
+    template <typename Object, typename Key>
+    inline void BSTree<Object, Key>::makeEmpty()
+    {
+        destroy( root );
+    }
 
 
 /**
  * preorder traversal
  */
-template <typename Object, typename Key>
-inline void BSTree<Object, Key>::preTraverse()
-{
-    preTravNonrecursion( root );
-}
+    template <typename Object, typename Key>
+    inline void BSTree<Object, Key>::preTraverse()
+    {
+        preTravNonrecursion( root );
+    }
 
 
 /**
  * inorder traversal
  */
-template <typename Object, typename Key>
-inline void BSTree<Object, Key>::inTraverse()
-{
-    inTravNonrecursion( root );
-}
+    template <typename Object, typename Key>
+    inline void BSTree<Object, Key>::inTraverse()
+    {
+        inTravNonrecursion( root );
+    }
 
 
 /**
  * postorder traversal
  */
-template <typename Object, typename Key>
-inline void BSTree<Object, Key>::postTraverse()
-{
-    postTravNonrecursion( root );
-}
+    template <typename Object, typename Key>
+    inline void BSTree<Object, Key>::postTraverse()
+    {
+        postTravNonrecursion( root );
+    }
 
 
 /**
  * Insert a new element x in the tree.
  * If "x" isn't existent, return "true", else return "false".
  */
-template <typename Object, typename Key>
-inline bool BSTree<Object, Key>::insert( const Object &x )
-{
-    return insert( root, x );
-}
+    template <typename Object, typename Key>
+    inline bool BSTree<Object, Key>::insert( const Object &x )
+    {
+        return insert( root, x );
+    }
 
 
 /**
@@ -114,267 +113,268 @@ inline bool BSTree<Object, Key>::insert( const Object &x )
  * If such key is existent, copy the deleted element to "x",
  * and return "true"; else return "false".
  */
-template <typename Object, typename Key>
-inline bool BSTree<Object, Key>::remove( Key k )
-{
-    return remove( root, k );
-}
+    template <typename Object, typename Key>
+    inline bool BSTree<Object, Key>::remove( Key k )
+    {
+        return remove( root, k );
+    }
 
 
 /**
  * Finding an element with key value of "k" in the tree.
  */
-template <typename Object, typename Key>
-inline BSNode<Object>* BSTree<Object, Key>::search( Key k )
-{
-    return search( root, k );
-}
+    template <typename Object, typename Key>
+    inline BSNode<Object>* BSTree<Object, Key>::search( Key k )
+    {
+        return search( root, k );
+    }
 
 
 /**
  * Return smallest item in the tree.
  */
-template <typename Object, typename Key>
-Object BSTree<Object, Key>::minItem()
-{
-    return minItem(root)->data;
-}
+    template <typename Object, typename Key>
+    Object BSTree<Object, Key>::minItem()
+    {
+        return minItem(root)->data;
+    }
 
 
 /**
  * Return largest item in the tree.
  */
-template <typename Object, typename Key>
-Object BSTree<Object, Key>::maxItem()
-{
-    return maxItem(root)->data;
-}
+    template <typename Object, typename Key>
+    Object BSTree<Object, Key>::maxItem()
+    {
+        return maxItem(root)->data;
+    }
 
 
 /**
  * Destroy the tree.
  */
-template <typename Object, typename Key>
-void BSTree<Object, Key>::destroy( BSNode<Object> *&r )
-{
-    if( r != NULL )
+    template <typename Object, typename Key>
+    void BSTree<Object, Key>::destroy( BSNode<Object> *&r )
     {
-        destroy( r->left );
-        destroy( r->right );
-        delete r;
+        if( r != NULL )
+        {
+            destroy( r->left );
+            destroy( r->right );
+            delete r;
+        }
+        r = NULL;
     }
-    r = NULL;
-}
 
 
 /**
  * Preorder traversa the tree by nonrecursion method.
  */
-template <typename Object, typename Key>
-void BSTree<Object, Key>::preTravNonrecursion( BSNode<Object> *t )
-{
-    Stack< BSNode<Object>* > s;
-
-    while( (t != NULL) || !s.isEmpty() )
+    template <typename Object, typename Key>
+    void BSTree<Object, Key>::preTravNonrecursion( BSNode<Object> *t )
     {
-        if( t != NULL )
+        Stack< BSNode<Object>* > s;
+
+        while( (t != NULL) || !s.isEmpty() )
         {
-            visit( t );
-            s.push( t );
-            t = t->left;
-        }
-        else
-        {
-            s.getTop( t );
-            s.pop();
-            t = t->right;
+            if( t != NULL )
+            {
+                visit( t );
+                s.push( t );
+                t = t->left;
+            }
+            else
+            {
+                s.getTop( t );
+                s.pop();
+                t = t->right;
+            }
         }
     }
-}
 
 
 /**
  * Inorder traversa the tree by nonrecursion method.
  */
-template <typename Object, typename Key>
-void BSTree<Object, Key>::inTravNonrecursion( BSNode<Object> *t )
-{
-    Stack< BSNode<Object>* > s;
-
-    while( (t != NULL) || !s.isEmpty() )
+    template <typename Object, typename Key>
+    void BSTree<Object, Key>::inTravNonrecursion( BSNode<Object> *t )
     {
-        if( t != NULL )
+        Stack< BSNode<Object>* > s;
+
+        while( (t != NULL) || !s.isEmpty() )
         {
-            s.push( t );
-            t = t->left;
-        }
-        else
-        {
-            s.getTop( t );
-            visit(t);
-            s.pop();
-            t = t->right;
+            if( t != NULL )
+            {
+                s.push( t );
+                t = t->left;
+            }
+            else
+            {
+                s.getTop( t );
+                visit(t);
+                s.pop();
+                t = t->right;
+            }
         }
     }
-}
 
 
 /**
  * Postorder traversa the tree by nonrecursion method.
  */
-template <typename Object, typename Key>
-void BSTree<Object, Key>::postTravNonrecursion( BSNode<Object> *t )
-{
-    Stack< BSNode<Object>* > s;
-    BSNode<Object>  *pre = NULL,        //last traversed node
-                    *top = NULL;        //current traversed node
-
-    while( (t != NULL) || !s.isEmpty() )
+    template <typename Object, typename Key>
+    void BSTree<Object, Key>::postTravNonrecursion( BSNode<Object> *t )
     {
-        if( t != NULL )
+        Stack< BSNode<Object>* > s;
+        BSNode<Object>  *pre = NULL,        //last traversed node
+        *top = NULL;        //current traversed node
+
+        while( (t != NULL) || !s.isEmpty() )
         {
-            s.push( t );
-            t = t->left;
-        }
-        else
-        {
-            s.getTop( top );
-            if( top->right != NULL && top->right != pre )
-                t = top->right;
+            if( t != NULL )
+            {
+                s.push( t );
+                t = t->left;
+            }
             else
             {
-                visit( top );
-                pre = top;
-                s.pop();
+                s.getTop( top );
+                if( top->right != NULL && top->right != pre )
+                    t = top->right;
+                else
+                {
+                    visit( top );
+                    pre = top;
+                    s.pop();
+                }
             }
         }
     }
-}
 
 
 /**
  * Insert elemetn "x" into the tree "r".
  */
-template <typename Object, typename Key>
-bool BSTree<Object, Key>::insert( BSNode<Object> *&r, const Object &x )
-{
-    BSNode<Object>  *cur = r,
-                    *par = NULL;
-
-    while( cur != NULL )
+    template <typename Object, typename Key>
+    bool BSTree<Object, Key>::insert( BSNode<Object> *&r, const Object &x )
     {
-        if( cur->data == x )
-            break;
-        else
-        {
-            par = cur;
-            if( cur->data < x )
-                cur = cur->right;
-            else if( cur->data > x )
-                cur = cur->left;
-        }
-    }
+        BSNode<Object>  *cur = r,
+                *par = NULL;
 
-    if( cur != NULL )
-        return false;
-    else
-    {
-        BSNode<Object> *tmp = new BSNode<Object>( x, NULL, NULL );
-        if( par == NULL )
-            r = tmp;
-        else
+        while( cur != NULL )
         {
-            if( par->data < x )
-                par->right = tmp;
+            if( cur->data == x )
+                break;
             else
-                par->left = tmp;
+            {
+                par = cur;
+                if( cur->data < x )
+                    cur = cur->right;
+                else if( cur->data > x )
+                    cur = cur->left;
+            }
         }
-        return true;
-    }
-}
 
-
-/**
- * Remove elemetn with key "k" from the tree "r".
- */
-template <typename Object, typename Key>
-bool BSTree<Object, Key>::remove( BSNode<Object> *&r, Key k )
-{
-    if( r == NULL )
-        return false;
-
-    if( k < r->data.key )
-        return remove( r->left, k );
-    else if( r->data.key < k )
-        return remove( r->right, k );
-    else if( r->left != NULL && r->right != NULL )
-    {
-        r->data = minItem( r->right )->data;
-        return remove( r->right, r->data.key );
-    }
-    else
-    {
-        BSNode<Object> *oldNode = r;
-        r = ( r->left != NULL ) ? r->left : r->right;
-        delete oldNode;
-        return true;
-    }
-}
-
-
-/**
- * Remove elemetn with key "k" from the tree "r".
- */
-template <typename Object, typename Key>
-BSNode<Object>* BSTree<Object, Key>::search( BSNode<Object> *r, Key k )
-{
-    while( r != NULL )
-        if( k < r->data.key )
-            r = r->left;
-        else if( k > r->data.key )
-            r = r->right;
+        if( cur != NULL )
+            return false;
         else
-            return r;
+        {
+            BSNode<Object> *tmp = new BSNode<Object>( x, NULL, NULL );
+            if( par == NULL )
+                r = tmp;
+            else
+            {
+                if( par->data < x )
+                    par->right = tmp;
+                else
+                    par->left = tmp;
+            }
+            return true;
+        }
+    }
 
-    return NULL;
-}
+
+/**
+ * Remove elemetn with key "k" from the tree "r".
+ */
+    template <typename Object, typename Key>
+    bool BSTree<Object, Key>::remove( BSNode<Object> *&r, Key k )
+    {
+        if( r == NULL )
+            return false;
+
+        if( k < r->data.key )
+            return remove( r->left, k );
+        else if( r->data.key < k )
+            return remove( r->right, k );
+        else if( r->left != NULL && r->right != NULL )
+        {
+            r->data = minItem( r->right )->data;
+            return remove( r->right, r->data.key );
+        }
+        else
+        {
+            BSNode<Object> *oldNode = r;
+            r = ( r->left != NULL ) ? r->left : r->right;
+            delete oldNode;
+            return true;
+        }
+    }
+
+
+/**
+ * Remove elemetn with key "k" from the tree "r".
+ */
+    template <typename Object, typename Key>
+    BSNode<Object>* BSTree<Object, Key>::search( BSNode<Object> *r, Key k )
+    {
+        while( r != NULL )
+            if( k < r->data.key )
+                r = r->left;
+            else if( k > r->data.key )
+                r = r->right;
+            else
+                return r;
+
+        return NULL;
+    }
 
 
 /**
  * Find the smallest element in the tree "r".
  */
-template <typename Object, typename Key>
-BSNode<Object>* BSTree<Object, Key>::minItem( BSNode<Object> *r )
-{
-    if( r == NULL )
-        return NULL;
+    template <typename Object, typename Key>
+    BSNode<Object>* BSTree<Object, Key>::minItem( BSNode<Object> *r )
+    {
+        if( r == NULL )
+            return NULL;
 
-    while( r->left != NULL )
-        r = r->left;
-    return r;
-}
+        while( r->left != NULL )
+            r = r->left;
+        return r;
+    }
 
 
 /**
  * Find the maximum element in the tree "r".
  */
-template <typename Object, typename Key>
-BSNode<Object>* BSTree<Object, Key>::maxItem( BSNode<Object> *r )
-{
-    if( r == NULL )
-        return NULL;
+    template <typename Object, typename Key>
+    BSNode<Object>* BSTree<Object, Key>::maxItem( BSNode<Object> *r )
+    {
+        if( r == NULL )
+            return NULL;
 
-    while( r->right != NULL )
-        r = r->right;
-    return r;
-}
+        while( r->right != NULL )
+            r = r->right;
+        return r;
+    }
 
 
 /**
  * Visit the item pointed by "p".
  */
-template <typename Object, typename Key>
-inline void BSTree<Object, Key>::visit( BSNode<Object> *p )
-{
-    cout << p->data;
+    template <typename Object, typename Key>
+    inline void BSTree<Object, Key>::visit( BSNode<Object> *p )
+    {
+        cout << p->data;
+    }
 }

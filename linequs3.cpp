@@ -32,7 +32,7 @@
  *****************************************************************************/
 #include "linequs3.h"
 
-using namespace splab;
+namespace splab {
 
 /**
  * Rank defect linear equationequations solution by Truncated SVD.
@@ -40,42 +40,41 @@ using namespace splab;
  * b  --->  The n-by-1 right-hand side vector;
  * x  --->  The n-by-1 solution vector.
  */
-template <typename Real>
-Vector<Real> tsvd( const Matrix<Real> &A, const Vector<Real> &b, Real tol )
-{
-    int m = A.rows(),
-        n = A.cols();
+    template<typename Real>
+    Vector<Real> tsvd(const Matrix<Real> &A, const Vector<Real> &b, Real tol) {
+        int m = A.rows(),
+                n = A.cols();
 
-    assert( m == b.size() );
+        assert(m == b.size());
 
-    SVD<Real> svd;
-    svd.dec( A );
-    Matrix<Real> U = svd.getU();
-    Matrix<Real> V = svd.getV();
-    Vector<Real> s = svd.getSV();
-    Vector<Real> x(n);
+        SVD<Real> svd;
+        svd.dec(A);
+        Matrix<Real> U = svd.getU();
+        Matrix<Real> V = svd.getV();
+        Vector<Real> s = svd.getSV();
+        Vector<Real> x(n);
 
-    int r = 0;
-    if( tol <= 0 )
-        tol = max( m, n ) * s[0] * EPS;
-    for( int i=0; i<s.size(); ++i )
-        if( s[i] >= tol )
-            r++;
+        int r = 0;
+        if (tol <= 0)
+            tol = max(m, n) * s[0] * EPS;
+        for (int i = 0; i < s.size(); ++i)
+            if (s[i] >= tol)
+                r++;
 
-    // y = U^T * b
-    Vector<Real> y(r);
-    for( int i=0; i<r; ++i )
-        for( int j=0; j<m; ++j )
-            y[i] += U[j][i]*b[j];
+        // y = U^T * b
+        Vector<Real> y(r);
+        for (int i = 0; i < r; ++i)
+            for (int j = 0; j < m; ++j)
+                y[i] += U[j][i] * b[j];
 
-    // y = y / s
-    for( int i=0; i<r; ++i )
-        y[i] /= s[i];
+        // y = y / s
+        for (int i = 0; i < r; ++i)
+            y[i] /= s[i];
 
-    // x = V * y
-    for( int i=0; i<n; ++i )
-        for( int j=0; j<r; ++j )
-            x[i] += V[i][j]*y[j];
+        // x = V * y
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < r; ++j)
+                x[i] += V[i][j] * y[j];
 
 //    for( int i=0; i<n; ++i )
 //        for( int j=0; j<r; ++j )
@@ -86,8 +85,8 @@ Vector<Real> tsvd( const Matrix<Real> &A, const Vector<Real> &b, Real tol )
 //            x[i] += sum * V[i][j] / s[j];
 //        }
 
-    return x;
-}
+        return x;
+    }
 
 
 /**
@@ -96,44 +95,43 @@ Vector<Real> tsvd( const Matrix<Real> &A, const Vector<Real> &b, Real tol )
  * b  --->  The n-by-1 right-hand side vector;
  * x  --->  The n-by-1 solution vector.
  */
-template <typename Type>
-Vector<complex<Type> > tsvd( const Matrix<complex<Type> > &A,
-                             const Vector<complex<Type> > &b,
-                             Type tol )
-{
-    int m = A.rows(),
-        n = A.cols();
+    template<typename Type>
+    Vector<complex<Type> > tsvd(const Matrix<complex<Type> > &A,
+                                const Vector<complex<Type> > &b,
+                                Type tol) {
+        int m = A.rows(),
+                n = A.cols();
 
-    assert( m == b.size() );
+        assert(m == b.size());
 
-    CSVD<Type> svd;
-    svd.dec( A );
-    Matrix<complex<Type> > U = svd.getU();
-    Matrix<complex<Type> > V = svd.getV();
-    Vector<Type> s = svd.getSV();
-    Vector<complex<Type> > x(n);
+        CSVD<Type> svd;
+        svd.dec(A);
+        Matrix<complex<Type> > U = svd.getU();
+        Matrix<complex<Type> > V = svd.getV();
+        Vector<Type> s = svd.getSV();
+        Vector<complex<Type> > x(n);
 
-    int r = 0;
-    if( tol <= 0 )
-        tol = max( m, n ) * s[0] * EPS;
-    for( int i=0; i<s.size(); ++i )
-        if( s[i] >= tol )
-            r++;
+        int r = 0;
+        if (tol <= 0)
+            tol = max(m, n) * s[0] * EPS;
+        for (int i = 0; i < s.size(); ++i)
+            if (s[i] >= tol)
+                r++;
 
-    // y = U^H * b
-    Vector<complex<Type> > y(r);
-    for( int i=0; i<r; ++i )
-        for( int j=0; j<m; ++j )
-            y[i] += conj(U[j][i])*b[j];
+        // y = U^H * b
+        Vector<complex<Type> > y(r);
+        for (int i = 0; i < r; ++i)
+            for (int j = 0; j < m; ++j)
+                y[i] += conj(U[j][i]) * b[j];
 
-    // y = y / s
-    for( int i=0; i<r; ++i )
-        y[i] /= s[i];
+        // y = y / s
+        for (int i = 0; i < r; ++i)
+            y[i] /= s[i];
 
-    // x = V * y
-    for( int i=0; i<n; ++i )
-        for( int j=0; j<r; ++j )
-            x[i] += V[i][j]*y[j];
+        // x = V * y
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < r; ++j)
+                x[i] += V[i][j] * y[j];
 
 //    for( int i=0; i<n; ++i )
 //        for( int j=0; j<r; ++j )
@@ -144,8 +142,8 @@ Vector<complex<Type> > tsvd( const Matrix<complex<Type> > &A,
 //            x[i] += sum * V[i][j] / s[j];
 //        }
 
-    return x;
-}
+        return x;
+    }
 
 
 /**
@@ -155,39 +153,38 @@ Vector<complex<Type> > tsvd( const Matrix<complex<Type> > &A,
  * sigma :  dampted factor;
  * x  --->  The n-by-1 solution vector.
  */
-template <typename Real>
-Vector<Real> dsvd( const Matrix<Real> &A, const Vector<Real> &b,
-                   Real &sigma )
-{
-    int m = A.rows(),
-        n = A.cols();
+    template<typename Real>
+    Vector<Real> dsvd(const Matrix<Real> &A, const Vector<Real> &b,
+                      Real &sigma) {
+        int m = A.rows(),
+                n = A.cols();
 
-    assert( m == b.size() );
+        assert(m == b.size());
 
-    SVD<Real> svd;
-    svd.dec( A );
-    Matrix<Real> U = svd.getU();
-    Matrix<Real> V = svd.getV();
-    Vector<Real> s = svd.getSV();
-    Vector<Real> x(n);
+        SVD<Real> svd;
+        svd.dec(A);
+        Matrix<Real> U = svd.getU();
+        Matrix<Real> V = svd.getV();
+        Vector<Real> s = svd.getSV();
+        Vector<Real> x(n);
 
-    int p = s.size();
-    s += sigma;
+        int p = s.size();
+        s += sigma;
 
-    // y = U^T * b
-    Vector<Real> y(p);
-    for( int i=0; i<p; ++i )
-        for( int j=0; j<m; ++j )
-            y[i] += U[j][i]*b[j];
+        // y = U^T * b
+        Vector<Real> y(p);
+        for (int i = 0; i < p; ++i)
+            for (int j = 0; j < m; ++j)
+                y[i] += U[j][i] * b[j];
 
-    // y = y / s
-    for( int i=0; i<p; ++i )
-        y[i] /= s[i];
+        // y = y / s
+        for (int i = 0; i < p; ++i)
+            y[i] /= s[i];
 
-    // x = V * y
-    for( int i=0; i<n; ++i )
-        for( int j=0; j<p; ++j )
-            x[i] += V[i][j]*y[j];
+        // x = V * y
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < p; ++j)
+                x[i] += V[i][j] * y[j];
 
 //    for( int i=0; i<n; ++i )
 //        for( int j=0; j<p; ++j )
@@ -198,8 +195,8 @@ Vector<Real> dsvd( const Matrix<Real> &A, const Vector<Real> &b,
 //            x[i] += sum * V[i][j] / s[j];
 //        }
 
-    return x;
-}
+        return x;
+    }
 
 
 /**
@@ -209,40 +206,39 @@ Vector<Real> dsvd( const Matrix<Real> &A, const Vector<Real> &b,
  * sigma :  dampted factor;
  * x  --->  The n-by-1 solution vector.
  */
-template <typename Type>
-Vector<complex<Type> > dsvd( const Matrix<complex<Type> > &A,
-                             const Vector<complex<Type> > &b,
-                             Type &sigma )
-{
-    int m = A.rows(),
-        n = A.cols();
+    template<typename Type>
+    Vector<complex<Type> > dsvd(const Matrix<complex<Type> > &A,
+                                const Vector<complex<Type> > &b,
+                                Type &sigma) {
+        int m = A.rows(),
+                n = A.cols();
 
-    assert( m == b.size() );
+        assert(m == b.size());
 
-    CSVD<Type> svd;
-    svd.dec( A );
-    Matrix<complex<Type> > U = svd.getU();
-    Matrix<complex<Type> > V = svd.getV();
-    Vector<Type> s = svd.getSV();
-    Vector<complex<Type> > x(n);
+        CSVD<Type> svd;
+        svd.dec(A);
+        Matrix<complex<Type> > U = svd.getU();
+        Matrix<complex<Type> > V = svd.getV();
+        Vector<Type> s = svd.getSV();
+        Vector<complex<Type> > x(n);
 
-    int p = s.size();
-    s += sigma;
+        int p = s.size();
+        s += sigma;
 
-    // y = U^H * b
-    Vector<complex<Type> > y(p);
-    for( int i=0; i<p; ++i )
-        for( int j=0; j<m; ++j )
-            y[i] += conj(U[j][i])*b[j];
+        // y = U^H * b
+        Vector<complex<Type> > y(p);
+        for (int i = 0; i < p; ++i)
+            for (int j = 0; j < m; ++j)
+                y[i] += conj(U[j][i]) * b[j];
 
-    // y = y / s
-    for( int i=0; i<p; ++i )
-        y[i] /= s[i];
+        // y = y / s
+        for (int i = 0; i < p; ++i)
+            y[i] /= s[i];
 
-    // x = V * y
-    for( int i=0; i<n; ++i )
-        for( int j=0; j<p; ++j )
-            x[i] += V[i][j]*y[j];
+        // x = V * y
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < p; ++j)
+                x[i] += V[i][j] * y[j];
 
 //    for( int i=0; i<n; ++i )
 //        for( int j=0; j<p; ++j )
@@ -253,8 +249,8 @@ Vector<complex<Type> > dsvd( const Matrix<complex<Type> > &A,
 //            x[i] += sum * V[i][j] / s[j];
 //        }
 
-    return x;
-}
+        return x;
+    }
 
 
 /**
@@ -264,41 +260,40 @@ Vector<complex<Type> > dsvd( const Matrix<complex<Type> > &A,
  * alpha :  regularization factor;
  * x  --->  The n-by-1 solution vector.
  */
-template <typename Real>
-Vector<Real> tikhonov( const Matrix<Real> &A, const Vector<Real> &b,
-                       Real &alpha )
-{
-    int m = A.rows(),
-        n = A.cols();
+    template<typename Real>
+    Vector<Real> tikhonov(const Matrix<Real> &A, const Vector<Real> &b,
+                          Real &alpha) {
+        int m = A.rows(),
+                n = A.cols();
 
-    assert( m == b.size() );
+        assert(m == b.size());
 
-    SVD<Real> svd;
-    svd.dec( A );
-    Matrix<Real> U = svd.getU();
-    Matrix<Real> V = svd.getV();
-    Vector<Real> s = svd.getSV();
-    Vector<Real> x(n);
+        SVD<Real> svd;
+        svd.dec(A);
+        Matrix<Real> U = svd.getU();
+        Matrix<Real> V = svd.getV();
+        Vector<Real> s = svd.getSV();
+        Vector<Real> x(n);
 
-    int p = s.size();
-    Real alpha2 = alpha*alpha;
-    for( int i=0; i<p; ++i )
-        s[i] += alpha2/s[i];
+        int p = s.size();
+        Real alpha2 = alpha * alpha;
+        for (int i = 0; i < p; ++i)
+            s[i] += alpha2 / s[i];
 
-    // y = U^T * b
-    Vector<Real> y(p);
-    for( int i=0; i<p; ++i )
-        for( int j=0; j<m; ++j )
-            y[i] += U[j][i]*b[j];
+        // y = U^T * b
+        Vector<Real> y(p);
+        for (int i = 0; i < p; ++i)
+            for (int j = 0; j < m; ++j)
+                y[i] += U[j][i] * b[j];
 
-    // y = y / s
-    for( int i=0; i<p; ++i )
-        y[i] /= s[i];
+        // y = y / s
+        for (int i = 0; i < p; ++i)
+            y[i] /= s[i];
 
-    // x = V * y
-    for( int i=0; i<n; ++i )
-        for( int j=0; j<p; ++j )
-            x[i] += V[i][j]*y[j];
+        // x = V * y
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < p; ++j)
+                x[i] += V[i][j] * y[j];
 
 //    for( int i=0; i<n; ++i )
 //        for( int j=0; j<p; ++j )
@@ -309,8 +304,8 @@ Vector<Real> tikhonov( const Matrix<Real> &A, const Vector<Real> &b,
 //            x[i] += sum * V[i][j] / s[j];
 //        }
 
-    return x;
-}
+        return x;
+    }
 
 
 /**
@@ -321,42 +316,41 @@ Vector<Real> tikhonov( const Matrix<Real> &A, const Vector<Real> &b,
  * alpha :  regularization factor;
  * x  --->  The n-by-1 solution vector.
  */
-template <typename Type>
-Vector<complex<Type> > tikhonov( const Matrix<complex<Type> > &A,
-                                 const Vector<complex<Type> > &b,
-                                 Type &alpha )
-{
-    int m = A.rows(),
-        n = A.cols();
+    template<typename Type>
+    Vector<complex<Type> > tikhonov(const Matrix<complex<Type> > &A,
+                                    const Vector<complex<Type> > &b,
+                                    Type &alpha) {
+        int m = A.rows(),
+                n = A.cols();
 
-    assert( m == b.size() );
+        assert(m == b.size());
 
-    CSVD<Type> svd;
-    svd.dec( A );
-    Matrix<complex<Type> > U = svd.getU();
-    Matrix<complex<Type> > V = svd.getV();
-    Vector<Type> s = svd.getSV();
-    Vector<complex<Type> > x(n);
+        CSVD<Type> svd;
+        svd.dec(A);
+        Matrix<complex<Type> > U = svd.getU();
+        Matrix<complex<Type> > V = svd.getV();
+        Vector<Type> s = svd.getSV();
+        Vector<complex<Type> > x(n);
 
-    int p = s.size();
-    Type alpha2 = alpha*alpha;
-    for( int i=0; i<p; ++i )
-        s[i] += alpha2/s[i];
+        int p = s.size();
+        Type alpha2 = alpha * alpha;
+        for (int i = 0; i < p; ++i)
+            s[i] += alpha2 / s[i];
 
-    // y = U^H * b
-    Vector<complex<Type> > y(p);
-    for( int i=0; i<p; ++i )
-        for( int j=0; j<m; ++j )
-            y[i] += conj(U[j][i])*b[j];
+        // y = U^H * b
+        Vector<complex<Type> > y(p);
+        for (int i = 0; i < p; ++i)
+            for (int j = 0; j < m; ++j)
+                y[i] += conj(U[j][i]) * b[j];
 
-    // y = y / s
-    for( int i=0; i<p; ++i )
-        y[i] /= s[i];
+        // y = y / s
+        for (int i = 0; i < p; ++i)
+            y[i] /= s[i];
 
-    // x = V * y
-    for( int i=0; i<n; ++i )
-        for( int j=0; j<p; ++j )
-            x[i] += V[i][j]*y[j];
+        // x = V * y
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < p; ++j)
+                x[i] += V[i][j] * y[j];
 
 //    for( int i=0; i<n; ++i )
 //        for( int j=0; j<p; ++j )
@@ -367,5 +361,6 @@ Vector<complex<Type> > tikhonov( const Matrix<complex<Type> > &A,
 //            x[i] += sum * V[i][j] / s[j];
 //        }
 
-    return x;
+        return x;
+    }
 }

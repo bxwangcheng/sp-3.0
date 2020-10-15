@@ -51,9 +51,9 @@
 #define WIENER_H
 
 
-#include <vector.h>
-#include <correlation.h>
-#include <levinson.h>
+#include "vector.h"
+#include "correlation.h"
+#include "levinson.h"
 
 
 namespace splab

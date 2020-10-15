@@ -32,62 +32,63 @@
  *****************************************************************************/
 #include "convolution.h"
 
-using namespace splab;
-
-/**
- * convolution and ploynonal multiplication.
- */
-template <typename Type>
-Vector<Type> conv( const Vector<Type> &signal, const Vector<Type> &filter )
-{
-    if( signal.dim() < filter.dim() )
-        return convolution( filter, signal );
-    else
-        return convolution( signal, filter );
-}
-
-template <typename Type>
-Vector<Type> convolution( const Vector<Type> &signal, const Vector<Type> &filter )
-{
-    int sigLength = signal.dim();
-    int filLength = filter.dim();
-    assert( sigLength >= filLength );
-
-    int length = sigLength + filLength - 1;
-    Vector<Type> x(length);
-
-    for( int i=1; i<=length; ++i )
+namespace splab {
+    /**
+    * convolution and ploynonal multiplication.
+    */
+    template <typename Type>
+    Vector<Type> conv( const Vector<Type> &signal, const Vector<Type> &filter )
     {
-        x(i) = 0;
-        if( i < filLength )
-            for( int j=1; j<=i; ++j )
-                x(i) += filter(j) * signal(i-j+1);
-        else if( i <= sigLength )
-            for( int j=1; j<=filLength; ++j )
-                x(i) += filter(j) * signal(i-j+1);
+        if( signal.dim() < filter.dim() )
+            return convolution( filter, signal );
         else
-            for( int j=i-sigLength+1; j<=filLength; ++j )
-                x(i) += filter(j) * signal(i-j+1);
+            return convolution( signal, filter );
     }
-    return x;
-}
+
+    template <typename Type>
+    Vector<Type> convolution( const Vector<Type> &signal, const Vector<Type> &filter )
+    {
+        int sigLength = signal.dim();
+        int filLength = filter.dim();
+        assert( sigLength >= filLength );
+
+        int length = sigLength + filLength - 1;
+        Vector<Type> x(length);
+
+        for( int i=1; i<=length; ++i )
+        {
+            x(i) = 0;
+            if( i < filLength )
+                for( int j=1; j<=i; ++j )
+                    x(i) += filter(j) * signal(i-j+1);
+            else if( i <= sigLength )
+                for( int j=1; j<=filLength; ++j )
+                    x(i) += filter(j) * signal(i-j+1);
+            else
+                for( int j=i-sigLength+1; j<=filLength; ++j )
+                    x(i) += filter(j) * signal(i-j+1);
+        }
+        return x;
+    }
 
 
 /**
  * Fast convolution by FFT.
  */
-template<typename Type>
-Vector<Type> fastConv( const Vector<Type> &xn, const Vector<Type> &yn )
-{
-    int M = xn.dim(),
-        N = yn.dim();
+    template<typename Type>
+    Vector<Type> fastConv( const Vector<Type> &xn, const Vector<Type> &yn )
+    {
+        int M = xn.dim(),
+                N = yn.dim();
 
-    Vector<Type> xnPadded = wextend( xn, N-1, "right", "zpd" ),
-                 ynPadded = wextend( yn, M-1, "right", "zpd" );
-    return ifftc2r( fft(xnPadded) * fft(ynPadded) );
+        Vector<Type> xnPadded = wextend( xn, N-1, "right", "zpd" ),
+                ynPadded = wextend( yn, M-1, "right", "zpd" );
+        return ifftc2r( fft(xnPadded) * fft(ynPadded) );
 
 //    Vector< complex<Type> > Zk = fft(xnPadded) * fft(ynPadded);
 //    return ifftc2r(Zk);
 
 //    return ifftc2r( fft(wextend(xn,N-1,"right","zpd")) * fft(wextend(yn,M-1,"right","zpd")) );
+    }
+
 }

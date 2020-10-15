@@ -49,6 +49,99 @@
 
 #include "matrix.h"
 
+/**
+     * Main loop of specialized member function. This macro definition is
+     * aimed at avoiding code duplication.
+     */
+#define MAINLOOP                                        \
+    {                                                       \
+        int m = A.rows();                                   \
+        int n = A.cols();                                   \
+                                                            \
+        spd = (m == n);                                     \
+        if( !spd )                                          \
+            return;                                         \
+                                                            \
+        for( int j=0; j<A.rows(); ++j )                     \
+        {                                                   \
+            spd = spd && (imag(A[j][j]) == 0);              \
+            d = 0;                                          \
+                                                            \
+            for( int k=0; k<j; ++k )                        \
+            {                                               \
+                s = 0;                                      \
+                for( int i=0; i<k; ++i )                    \
+                    s += L[k][i] * conj(L[j][i]);           \
+                                                            \
+                L[j][k] = s = (A[j][k]-s) / L[k][k];        \
+                d = d + norm(s);                            \
+                spd = spd && (A[k][j] == conj(A[j][k]));    \
+            }                                               \
+                                                            \
+            d = real(A[j][j]) - d;                          \
+            spd = spd && ( d > 0 );                         \
+                                                            \
+            L[j][j] = sqrt( d > 0 ? d : 0 );                \
+            for( int k=j+1; k<A.rows(); ++k )               \
+                L[j][k] = 0;                                \
+        }                                                   \
+    }
+
+
+/**
+ * Solving process of specialized member function. This macro definition is
+ * aimed at avoiding code duplication.
+ */
+#define SOLVE1                                          \
+    {                                                       \
+        for( int k=0; k<n; ++k )                            \
+        {                                                   \
+            for( int i=0; i<k; ++i )                        \
+                x[k] -= x[i]*L[k][i];                       \
+                                                            \
+            x[k] /= L[k][k];                                \
+        }                                                   \
+                                                            \
+        for( int k=n-1; k>=0; --k )                         \
+        {                                                   \
+            for( int i=k+1; i<n; ++i )                      \
+                x[k] -= x[i]*conj(L[i][k]);                 \
+                                                            \
+            x[k] /= L[k][k];                                \
+        }                                                   \
+                                                            \
+        return x;                                           \
+    }
+
+
+/**
+ * Solving process of specialized member function. This macro definition is
+ * aimed at avoiding code duplication.
+ */
+#define SOLVE2                                          \
+    {                                                       \
+        int nx = B.cols();                                  \
+        for( int j=0; j<nx; ++j )                           \
+            for( int k=0; k<n; ++k )                        \
+            {                                               \
+                for( int i=0; i<k; ++i )                    \
+                    X[k][j] -= X[i][j]*L[k][i];             \
+                                                            \
+                X[k][j] /= L[k][k];                         \
+            }                                               \
+                                                            \
+        for( int j=0; j<nx; ++j )                           \
+            for( int k=n-1; k>=0; --k )                     \
+            {                                               \
+                for( int i=k+1; i<n; ++i )                  \
+                    X[k][j] -= X[i][j]*conj(L[i][k]);       \
+                                                            \
+                X[k][j] /= L[k][k];                         \
+            }                                               \
+                                                            \
+        return X;                                           \
+    }
+
 
 namespace splab
 {
@@ -59,15 +152,138 @@ namespace splab
 
     public:
 
-        Cholesky();
-        ~Cholesky();
+        /**
+        * constructor and destructor
+        */
+        Cholesky() : spd(true)
+        {
 
-        bool isSpd() const;
-        void dec( const Matrix<Type> &A );
-        Matrix<Type> getL() const;
+        }
 
-        Vector<Type> solve( const Vector<Type> &b );
-        Matrix<Type> solve( const Matrix<Type> &B );
+        ~Cholesky() {
+
+        }
+
+        /**
+        * return true, if original matrix is symmetric positive-definite.
+        */
+        inline bool isSpd() const {
+            return spd;
+        }
+
+        /**
+         * Constructs a lower triangular matrix L, such that L*L'= A.
+         * If A is not symmetric positive-definite (SPD), only a partial
+         * factorization is performed. If isspd() evalutate true then
+         * the factorization was successful.
+         */
+        void dec( const Matrix<Type> &A ) {
+            int m = A.rows();
+            int n = A.cols();
+
+            spd = (m == n);
+            if( !spd )
+                return;
+
+            L = Matrix<Type>(n,n);
+
+            // main loop.
+            for( int j=0; j<n; ++j )
+            {
+                Type d = 0;
+                for( int k=0; k<j; ++k )
+                {
+                    Type s = 0;
+                    for( int i=0; i<k; ++i )
+                        s += L[k][i]*L[j][i];
+
+                    L[j][k] = s = (A[j][k]-s) / L[k][k];
+                    d = d + s*s;
+                    spd = spd && (A[k][j] == A[j][k]);
+                }
+
+                d = A[j][j] - d;
+                spd = spd && ( d > 0 );
+
+                L[j][j] = sqrt( d > 0 ? d : 0 );
+                for( int k=j+1; k<n; ++k )
+                    L[j][k] = 0;
+            }
+        }
+
+        /**
+        * return the lower triangular factor, L, such that L*L'=A.
+        */
+        inline Matrix<Type> getL() const {
+            return L;
+        }
+
+        /**
+        * Solve a linear system A*x = b, using the previously computed
+        * cholesky factorization of A: L*L'.
+        */
+        Vector<Type> solve( const Vector<Type> &b ) {
+            int n = L.rows();
+            if( b.dim() != n )
+                return Vector<Type>();
+
+            Vector<Type> x = b;
+
+            // solve L*y = b
+            for( int k=0; k<n; ++k )
+            {
+                for( int i=0; i<k; ++i )
+                    x[k] -= x[i]*L[k][i];
+
+                x[k] /= L[k][k];
+            }
+
+            // solve L'*x = y
+            for( int k=n-1; k>=0; --k )
+            {
+                for( int i=k+1; i<n; ++i )
+                    x[k] -= x[i]*L[i][k];
+
+                x[k] /= L[k][k];
+            }
+
+            return x;
+        }
+
+        /**
+        * Solve a linear system A*X = B, using the previously computed
+        * cholesky factorization of A: L*L'.
+        */
+        Matrix<Type> solve( const Matrix<Type> &B ) {
+            int n = L.rows();
+            if( B.rows() != n )
+                return Matrix<Type>();
+
+            Matrix<Type> X = B;
+            int nx = B.cols();
+
+            // solve L*Y = B
+            for( int j=0; j<nx; ++j )
+                for( int k=0; k<n; ++k )
+                {
+                    for( int i=0; i<k; ++i )
+                        X[k][j] -= X[i][j]*L[k][i];
+
+                    X[k][j] /= L[k][k];
+                }
+
+            // solve L'*X = Y
+            for( int j=0; j<nx; ++j )
+                for( int k=n-1; k>=0; --k )
+                {
+                    for( int i=k+1; i<n; ++i )
+                        X[k][j] -= X[i][j]*L[i][k];
+
+                    X[k][j] /= L[k][k];
+                }
+
+            return X;
+        }
 
     private:
 
@@ -77,6 +293,8 @@ namespace splab
 
     };
     //	class Cholesky
+
+
 
 
 

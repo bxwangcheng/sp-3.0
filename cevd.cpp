@@ -32,121 +32,122 @@
  *****************************************************************************/
 #include "cevd.h"
 
+namespace splab {
+    /**
+     * constructor and destructor
+     */
+    template<typename Type>
+    CEVD<Type>::CEVD() : hermitian(true)
+    {
+    }
 
-/**
- * constructor and destructor
- */
-template<typename Type>
-CEVD<Type>::CEVD() : hermitian(true)
-{
-}
-
-template<typename Type>
-CEVD<Type>::~CEVD()
-{
-}
+    template<typename Type>
+    CEVD<Type>::~CEVD()
+    {
+    }
 
 
 /**
  * Check for symmetry, then construct the eigenvalue decomposition
  */
-template <typename Type>
-void CEVD<Type>::dec( const Matrix<complex<Type> > &A )
-{
-    int N = A.cols();
-
-    assert( A.rows() == N );
-
-    V = Matrix<complex<Type> >(N,N);
-
-    Matrix<Type> S(2*N,2*N);
-    for( int i=0; i<N; ++i )
-        for( int j=0; j<N; ++j )
-        {
-            S[i][j]     = A[i][j].real();
-            S[i][j+N]   = -A[i][j].imag();
-            S[i+N][j]   = -S[i][j+N];
-            S[i+N][j+N] = S[i][j];
-        }
-
-    EVD<Type> eig;
-    eig.dec(S);
-
-    if( eig.isSymmetric() )
+    template <typename Type>
+    void CEVD<Type>::dec( const Matrix<complex<Type> > &A )
     {
-        hermitian = true;
-        rd = Vector<Type>(N);
+        int N = A.cols();
 
-        Matrix<Type> RV = eig.getV();
-        Vector<Type> Rd = eig.getD();
+        assert( A.rows() == N );
 
+        V = Matrix<complex<Type> >(N,N);
+
+        Matrix<Type> S(2*N,2*N);
         for( int i=0; i<N; ++i )
-            rd[i] = Rd[2*i];
+            for( int j=0; j<N; ++j )
+            {
+                S[i][j]     = A[i][j].real();
+                S[i][j+N]   = -A[i][j].imag();
+                S[i+N][j]   = -S[i][j+N];
+                S[i+N][j+N] = S[i][j];
+            }
 
-        for( int j=0; j<N; ++j )
+        EVD<Type> eig;
+        eig.dec(S);
+
+        if( eig.isSymmetric() )
         {
-            int j2 = 2*j;
+            hermitian = true;
+            rd = Vector<Type>(N);
+
+            Matrix<Type> RV = eig.getV();
+            Vector<Type> Rd = eig.getD();
+
             for( int i=0; i<N; ++i )
-                V[i][j] = complex<Type>( RV[i][j2], RV[i+N][j2] );
+                rd[i] = Rd[2*i];
+
+            for( int j=0; j<N; ++j )
+            {
+                int j2 = 2*j;
+                for( int i=0; i<N; ++i )
+                    V[i][j] = complex<Type>( RV[i][j2], RV[i+N][j2] );
+            }
+        }
+        else
+        {
+            hermitian = false;
+            d = Vector<complex<Type> >(N);
+
+            Matrix<complex<Type> > cV = eig.getCV();
+            Vector<complex<Type> > cd = eig.getCD();
+
+            for( int i=0; i<N; ++i )
+                d[i] = cd[2*i];
+
+            for( int j=0; j<N; ++j )
+            {
+                int j2 = 2*j;
+                for( int i=0; i<N; ++i )
+                    V[i][j] = complex<Type>( cV[i][j2].real()-cV[i+N][j2].imag(),
+                                             cV[i][j2].imag()+cV[i+N][j2].real() );
+            }
         }
     }
-    else
-    {
-        hermitian = false;
-        d = Vector<complex<Type> >(N);
-
-        Matrix<complex<Type> > cV = eig.getCV();
-        Vector<complex<Type> > cd = eig.getCD();
-
-        for( int i=0; i<N; ++i )
-            d[i] = cd[2*i];
-
-        for( int j=0; j<N; ++j )
-        {
-            int j2 = 2*j;
-            for( int i=0; i<N; ++i )
-                V[i][j] = complex<Type>( cV[i][j2].real()-cV[i+N][j2].imag(),
-                                         cV[i][j2].imag()+cV[i+N][j2].real() );
-        }
-    }
-}
 
 
 /**
  * If the matrix is Hermitian, then return true.
  */
-template <typename Type>
-bool CEVD<Type>::isHertimian() const
-{
-    return hermitian;
-}
+    template <typename Type>
+    bool CEVD<Type>::isHertimian() const
+    {
+        return hermitian;
+    }
 
 
 /**
  * Return the COMPLEX eigenvector matrix
  */
-template <typename Type>
-inline Matrix<complex<Type> > CEVD<Type>::getV() const
-{
-    return V;
-}
+    template <typename Type>
+    inline Matrix<complex<Type> > CEVD<Type>::getV() const
+    {
+        return V;
+    }
 
 
 /**
  * Return the complex eigenvalues vector.
  */
-template <typename Type>
-inline Vector<complex<Type> > CEVD<Type>::getD() const
-{
-    return d;
-}
+    template <typename Type>
+    inline Vector<complex<Type> > CEVD<Type>::getD() const
+    {
+        return d;
+    }
 
 
 /**
  * Return the real eigenvalues vector.
  */
-template <typename Type>
-inline Vector<Type> CEVD<Type>::getRD() const
-{
-    return rd;
+    template <typename Type>
+    inline Vector<Type> CEVD<Type>::getRD() const
+    {
+        return rd;
+    }
 }

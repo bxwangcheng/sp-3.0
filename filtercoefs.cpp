@@ -32,27 +32,35 @@
  *****************************************************************************/
 #include "filtercoefs.h"
 
-using namespace splab;
+namespace splab {
 
 /**
  * Daubichies filters for wavelets with 4 vanishing moments.
  */
-template <typename Type>
-void db4Coefs( Vector<Type> &ld, Vector<Type> &hd,
-               Vector<Type> &lr, Vector<Type> &hr )
-{
-    ld.resize(8);
-    ld[0] = Type(-0.010597401784997);		ld[1] = Type(0.032883011666983);
-    ld[2] = Type(0.030841381835987); 		ld[3] = Type(-0.187034811718881);
-    ld[4] = Type(-0.027983769416984);		ld[5] = Type(0.630880767929590);
-    ld[6] = Type(0.714846570552542);		ld[7] = Type(0.230377813308855);
+    template<typename Type>
+    void db4Coefs(Vector<Type> &ld, Vector<Type> &hd,
+                  Vector<Type> &lr, Vector<Type> &hr) {
+        ld.resize(8);
+        ld[0] = Type(-0.010597401784997);
+        ld[1] = Type(0.032883011666983);
+        ld[2] = Type(0.030841381835987);
+        ld[3] = Type(-0.187034811718881);
+        ld[4] = Type(-0.027983769416984);
+        ld[5] = Type(0.630880767929590);
+        ld[6] = Type(0.714846570552542);
+        ld[7] = Type(0.230377813308855);
 
-    hd.resize(8);
-    hd[0] = Type(-0.230377813308855);		hd[1] = Type(0.714846570552542);
-    hd[2] = Type(-0.630880767929590);		hd[3] = Type(-0.027983769416984);
-    hd[4] = Type(0.187034811718881);		hd[5] = Type(0.030841381835987);
-    hd[6] = Type(-0.032883011666983);		hd[7] = Type(-0.010597401784997);
+        hd.resize(8);
+        hd[0] = Type(-0.230377813308855);
+        hd[1] = Type(0.714846570552542);
+        hd[2] = Type(-0.630880767929590);
+        hd[3] = Type(-0.027983769416984);
+        hd[4] = Type(0.187034811718881);
+        hd[5] = Type(0.030841381835987);
+        hd[6] = Type(-0.032883011666983);
+        hd[7] = Type(-0.010597401784997);
 
-    lr = flip(ld);
-    hr = flip(hd);
+        lr = flip(ld);
+        hr = flip(hd);
+    }
 }

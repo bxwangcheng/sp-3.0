@@ -32,83 +32,80 @@
  *****************************************************************************/
 #include "pseudoinverse.h"
 
-using namespace splab;
+namespace splab {
 
 /**
  * Compute the pseudoinverse of a real matrix.
  */
-template <typename Real>
-Matrix<Real> pinv( const Matrix<Real> &A, Real tol )
-{
-    int m = A.rows(),
-        n = A.cols();
+    template<typename Real>
+    Matrix<Real> pinv(const Matrix<Real> &A, Real tol) {
+        int m = A.rows(),
+                n = A.cols();
 
-    SVD<Real> svd;
-    svd.dec( A );
-    Matrix<Real> U = svd.getU();
-    Matrix<Real> V = svd.getV();
-    Vector<Real> s = svd.getSV();
+        SVD<Real> svd;
+        svd.dec(A);
+        Matrix<Real> U = svd.getU();
+        Matrix<Real> V = svd.getV();
+        Vector<Real> s = svd.getSV();
 
-    int r = 0;
-    if( tol <= 0 )
-        tol = max( m, n ) * s[0] * EPS;
-    for( int i=0; i<s.size(); ++i )
-        if( s[i] >= tol )
-            r++;
+        int r = 0;
+        if (tol <= 0)
+            tol = max(m, n) * s[0] * EPS;
+        for (int i = 0; i < s.size(); ++i)
+            if (s[i] >= tol)
+                r++;
 
-    for( int i=0; i<n; ++i )
-        for( int k=0; k<r; ++k )
+        for (int i = 0; i < n; ++i)
+            for (int k = 0; k < r; ++k)
                 V[i][k] /= s[k];
 
-    Matrix<Real> invA( n, m );
-    for( int i=0; i<n; ++i )
-        for( int j=0; j<m; ++j )
-        {
-            Real sum = 0;
-            for( int k=0; k<r; ++k )
-                sum += V[i][k]*U[j][k];
-            invA[i][j] = sum;
-        }
+        Matrix<Real> invA(n, m);
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < m; ++j) {
+                Real sum = 0;
+                for (int k = 0; k < r; ++k)
+                    sum += V[i][k] * U[j][k];
+                invA[i][j] = sum;
+            }
 
-    return invA;
-}
+        return invA;
+    }
 
 
 /**
  * Compute the pseudoinverse of a complex matrix.
  */
-template <typename Type>
-Matrix<complex<Type> > pinv( const Matrix<complex<Type> > &A, Type tol )
-{
-    int m = A.rows(),
-        n = A.cols();
+    template<typename Type>
+    Matrix<complex<Type> > pinv(const Matrix<complex<Type> > &A, Type tol) {
+        int m = A.rows(),
+                n = A.cols();
 
-    CSVD<Type> svd;
-    svd.dec( A );
-    Matrix<complex<Type> > U = svd.getU();
-    Matrix<complex<Type> > V = svd.getV();
-    Vector<Type> s = svd.getSV();
+        CSVD<Type> svd;
+        svd.dec(A);
+        Matrix<complex<Type> > U = svd.getU();
+        Matrix<complex<Type> > V = svd.getV();
+        Vector<Type> s = svd.getSV();
 
-    int r = 0;
-    if( tol <= 0 )
-        tol = max( m, n ) * s[0] * EPS;
-    for( int i=0; i<s.size(); ++i )
-        if( s[i] >= tol )
-            r++;
+        int r = 0;
+        if (tol <= 0)
+            tol = max(m, n) * s[0] * EPS;
+        for (int i = 0; i < s.size(); ++i)
+            if (s[i] >= tol)
+                r++;
 
-    for( int i=0; i<n; ++i )
-        for( int k=0; k<r; ++k )
+        for (int i = 0; i < n; ++i)
+            for (int k = 0; k < r; ++k)
                 V[i][k] /= s[k];
 
-    Matrix<complex<Type> >invA( n, m );
-    for( int i=0; i<n; ++i )
-        for( int j=0; j<m; ++j )
-        {
-            complex<Type> sum = 0;
-            for( int k=0; k<r; ++k )
-                sum += V[i][k]*conj(U[j][k]);
-            invA[i][j] = sum;
-        }
+        Matrix<complex<Type> > invA(n, m);
+        for (int i = 0; i < n; ++i)
+            for (int j = 0; j < m; ++j) {
+                complex<Type> sum = 0;
+                for (int k = 0; k < r; ++k)
+                    sum += V[i][k] * conj(U[j][k]);
+                invA[i][j] = sum;
+            }
 
-    return invA;
+        return invA;
+    }
 }

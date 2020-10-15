@@ -33,7 +33,7 @@
  *****************************************************************************/
 #include "linequs2.h"
 
-using namespace splab;
+namespace splab {
 
 /**
  * Overdetermined linear equationequations solution by Least Squares
@@ -42,19 +42,18 @@ using namespace splab;
  * b  --->  The n-by-1 right-hand side vector;
  * x  --->  The n-by-1 least squares solution vector.
  */
-template <typename Type>
-Vector<Type> lsSolver( const Matrix<Type> &A, const Vector<Type> &b )
-{
-    assert( A.rows() == b.size() );
-    assert( A.rows() > A.cols() );
+    template<typename Type>
+    Vector<Type> lsSolver(const Matrix<Type> &A, const Vector<Type> &b) {
+        assert(A.rows() == b.size());
+        assert(A.rows() > A.cols());
 
-    Cholesky<Type> cho;
-    cho.dec( trMult(A,A) );
-    if( cho.isSpd() )
-        return cho.solve( trMult(A,b) );
-    else
-        return luSolver( trMult(A,A), trMult(A,b) );
-}
+        Cholesky<Type> cho;
+        cho.dec(trMult(A, A));
+        if (cho.isSpd())
+            return cho.solve(trMult(A, b));
+        else
+            return luSolver(trMult(A, A), trMult(A, b));
+    }
 
 
 /**
@@ -63,22 +62,19 @@ Vector<Type> lsSolver( const Matrix<Type> &A, const Vector<Type> &b )
  * b  --->  The n-by-1 right-hand side vector;
  * x  --->  The n-by-1 least squares solution vector.
  */
-template <typename Real>
-Vector<Real> qrLsSolver( const Matrix<Real> &A, const Vector<Real> &b )
-{
-    assert( A.rows() == b.size() );
-    assert( A.rows() > A.cols() );
+    template<typename Real>
+    Vector<Real> qrLsSolver(const Matrix<Real> &A, const Vector<Real> &b) {
+        assert(A.rows() == b.size());
+        assert(A.rows() > A.cols());
 
-    QRD<Real> qr;
-    qr.dec( A );
-    if( !qr.isFullRank() )
-    {
-        cerr << "The matrix A is not Full Rank!" << endl;
-        return Vector<Real>();
+        QRD<Real> qr;
+        qr.dec(A);
+        if (!qr.isFullRank()) {
+            cerr << "The matrix A is not Full Rank!" << endl;
+            return Vector<Real>();
+        } else
+            return qr.solve(b);
     }
-    else
-        return qr.solve( b );
-}
 
 
 /**
@@ -87,17 +83,16 @@ Vector<Real> qrLsSolver( const Matrix<Real> &A, const Vector<Real> &b )
  * b  --->  The n-by-1 right-hand side vector;
  * x  --->  The n-by-1 least squares solution vector.
  */
-template<typename Real>
-Vector<Real> svdLsSolver( const Matrix<Real> &A, const Vector<Real> &b )
-{
-    assert( A.rows() == b.size() );
-    assert( A.rows() > A.cols() );
+    template<typename Real>
+    Vector<Real> svdLsSolver(const Matrix<Real> &A, const Vector<Real> &b) {
+        assert(A.rows() == b.size());
+        assert(A.rows() > A.cols());
 
-    SVD<Real> svd;
-    svd.dec( A );
-    Matrix<Real> U = svd.getU();
-    Matrix<Real> V = svd.getV();
-    Vector<Real> s = svd.getSV();
+        SVD<Real> svd;
+        svd.dec(A);
+        Matrix<Real> U = svd.getU();
+        Matrix<Real> V = svd.getV();
+        Vector<Real> s = svd.getSV();
 
 //    for( int i=0; i<V.rows(); ++i )
 //        for( int k=0; k<s.dim(); ++k )
@@ -105,8 +100,8 @@ Vector<Real> svdLsSolver( const Matrix<Real> &A, const Vector<Real> &b )
 //
 //    return V * trMult(U,b);
 
-    return V * ( trMult(U,b) / s );
-}
+        return V * (trMult(U, b) / s);
+    }
 
 
 /**
@@ -115,23 +110,20 @@ Vector<Real> svdLsSolver( const Matrix<Real> &A, const Vector<Real> &b )
  * b  --->  The n-by-1 right-hand side vector;
  * x  --->  The n-by-1 least squares solution vector.
  */
-template<typename Type>
-Vector<complex<Type> > qrLsSolver( const Matrix<complex<Type> > &A,
-                                   const Vector<complex<Type> > &b )
-{
-    assert( A.rows() == b.size() );
-    assert( A.rows() > A.cols() );
+    template<typename Type>
+    Vector<complex<Type> > qrLsSolver(const Matrix<complex<Type> > &A,
+                                      const Vector<complex<Type> > &b) {
+        assert(A.rows() == b.size());
+        assert(A.rows() > A.cols());
 
-    CQRD<Type> qr;
-    qr.dec( A );
-    if( !qr.isFullRank() )
-    {
-        cerr << "The matrix A is not Full Rank!" << endl;
-        return Vector<complex<Type> >();
+        CQRD<Type> qr;
+        qr.dec(A);
+        if (!qr.isFullRank()) {
+            cerr << "The matrix A is not Full Rank!" << endl;
+            return Vector<complex<Type> >();
+        } else
+            return qr.solve(b);
     }
-    else
-        return qr.solve( b );
-}
 
 
 /**
@@ -140,18 +132,17 @@ Vector<complex<Type> > qrLsSolver( const Matrix<complex<Type> > &A,
  * b  --->  The n-by-1 right-hand side vector;
  * x  --->  The n-by-1 least squares solution vector.
  */
-template<typename Type>
-Vector<complex<Type> > svdLsSolver( const Matrix<complex<Type> > &A,
-                                    const Vector<complex<Type> > &b )
-{
-    assert( A.rows() == b.size() );
-    assert( A.rows() > A.cols() );
+    template<typename Type>
+    Vector<complex<Type> > svdLsSolver(const Matrix<complex<Type> > &A,
+                                       const Vector<complex<Type> > &b) {
+        assert(A.rows() == b.size());
+        assert(A.rows() > A.cols());
 
-    CSVD<Type> svd;
-    svd.dec( A );
-    Matrix<complex<Type> > U = svd.getU();
-    Matrix<complex<Type> > V = svd.getV();
-    Vector<Type> s = svd.getSV();
+        CSVD<Type> svd;
+        svd.dec(A);
+        Matrix<complex<Type> > U = svd.getU();
+        Matrix<complex<Type> > V = svd.getV();
+        Vector<Type> s = svd.getSV();
 
 //    for( int i=0; i<V.rows(); ++i )
 //        for( int k=0; k<s.dim(); ++k )
@@ -159,8 +150,8 @@ Vector<complex<Type> > svdLsSolver( const Matrix<complex<Type> > &A,
 //
 //    return V * trMult(U,b);
 
-    return V * ( trMult(U,b) / complexVector(s) );
-}
+        return V * (trMult(U, b) / complexVector(s));
+    }
 
 
 /**
@@ -170,19 +161,18 @@ Vector<complex<Type> > svdLsSolver( const Matrix<complex<Type> > &A,
  * b  --->  The n-by-1 right-hand side vector;
  * x  --->  The n-by-1 minimum norm solution vector.
  */
-template <typename Type>
-Vector<Type> lnSolver( const Matrix<Type> &A, const Vector<Type> &b )
-{
-    assert( A.rows() == b.size() );
-    assert( A.rows() < A.cols() );
+    template<typename Type>
+    Vector<Type> lnSolver(const Matrix<Type> &A, const Vector<Type> &b) {
+        assert(A.rows() == b.size());
+        assert(A.rows() < A.cols());
 
-    Cholesky<Type> cho;
-    cho.dec( multTr(A,A) );
-    if( cho.isSpd() )
-        return trMult( A, cho.solve(b) );
-    else
-        return trMult( A, luSolver(multTr(A,A),b) );
-}
+        Cholesky<Type> cho;
+        cho.dec(multTr(A, A));
+        if (cho.isSpd())
+            return trMult(A, cho.solve(b));
+        else
+            return trMult(A, luSolver(multTr(A, A), b));
+    }
 
 
 /**
@@ -191,29 +181,25 @@ Vector<Type> lnSolver( const Matrix<Type> &A, const Vector<Type> &b )
  * b  --->  The n-by-1 right-hand side vector;
  * x  --->  The n-by-1 minimum norm solution vector.
  */
-template <typename Real>
-Vector<Real> qrLnSolver( const Matrix<Real> &A, const Vector<Real> &b )
-{
-    assert( A.rows() == b.size() );
-    assert( A.rows() < A.cols() );
+    template<typename Real>
+    Vector<Real> qrLnSolver(const Matrix<Real> &A, const Vector<Real> &b) {
+        assert(A.rows() == b.size());
+        assert(A.rows() < A.cols());
 
-    Matrix<Real> At( trT( A ) );
-    QRD<Real> qr;
-    qr.dec( At );
-    if( !qr.isFullRank() )
-    {
-        cerr << "The matrix A is not Full Rank!" << endl;
-        return Vector<Real>();
+        Matrix<Real> At(trT(A));
+        QRD<Real> qr;
+        qr.dec(At);
+        if (!qr.isFullRank()) {
+            cerr << "The matrix A is not Full Rank!" << endl;
+            return Vector<Real>();
+        } else {
+            Matrix<Real> Q, R;
+            Q = qr.getQ();
+            R = qr.getR();
+            Vector<Real> y(ltSolver(trT(R), b));
+            return Q * y;
+        }
     }
-    else
-    {
-        Matrix<Real> Q, R;
-        Q = qr.getQ();
-        R = qr.getR();
-        Vector<Real> y( ltSolver( trT( R ), b ) );
-        return Q * y;
-    }
-}
 
 
 /**
@@ -223,17 +209,16 @@ Vector<Real> qrLnSolver( const Matrix<Real> &A, const Vector<Real> &b )
  * b  --->  The n-by-1 right-hand side vector;
  * x  --->  The n-by-1 minimum norm solution vector.
  */
-template<typename Real>
-Vector<Real> svdLnSolver( const Matrix<Real> &A, const Vector<Real> &b )
-{
-    assert( A.rows() == b.size() );
-    assert( A.rows() < A.cols() );
+    template<typename Real>
+    Vector<Real> svdLnSolver(const Matrix<Real> &A, const Vector<Real> &b) {
+        assert(A.rows() == b.size());
+        assert(A.rows() < A.cols());
 
-    SVD<Real> svd;
-    svd.dec( A );
-    Matrix<Real> U = svd.getU();
-    Matrix<Real> V = svd.getV();
-    Vector<Real> s = svd.getSV();
+        SVD<Real> svd;
+        svd.dec(A);
+        Matrix<Real> U = svd.getU();
+        Matrix<Real> V = svd.getV();
+        Vector<Real> s = svd.getSV();
 
 //    for( int i=0; i<V.rows(); ++i )
 //        for( int k=0; k<s.dim(); ++k )
@@ -241,8 +226,8 @@ Vector<Real> svdLnSolver( const Matrix<Real> &A, const Vector<Real> &b )
 //
 //    return V * trMult(U,b);
 
-    return V * ( trMult(U,b) / s );
-}
+        return V * (trMult(U, b) / s);
+    }
 
 
 /**
@@ -252,30 +237,26 @@ Vector<Real> svdLnSolver( const Matrix<Real> &A, const Vector<Real> &b )
  * b  --->  The n-by-1 right-hand side vector;
  * x  --->  The n-by-1 minimum norm solution vector.
  */
-template<typename Type>
-Vector<complex<Type> > qrLnSolver( const Matrix<complex<Type> > &A,
-                                   const Vector<complex<Type> > &b )
-{
-    assert( A.rows() == b.size() );
-    assert( A.rows() < A.cols() );
+    template<typename Type>
+    Vector<complex<Type> > qrLnSolver(const Matrix<complex<Type> > &A,
+                                      const Vector<complex<Type> > &b) {
+        assert(A.rows() == b.size());
+        assert(A.rows() < A.cols());
 
-    Matrix<complex<Type> > At( trH( A ) );
-    CQRD<Type> qr;
-    qr.dec( At );
-    if( !qr.isFullRank() )
-    {
-        cerr << "The matrix A is not Full Rank!" << endl;
-        return Vector<complex<Type> >();
+        Matrix<complex<Type> > At(trH(A));
+        CQRD<Type> qr;
+        qr.dec(At);
+        if (!qr.isFullRank()) {
+            cerr << "The matrix A is not Full Rank!" << endl;
+            return Vector<complex<Type> >();
+        } else {
+            Matrix<complex<Type> > Q, R;
+            Q = qr.getQ();
+            R = qr.getR();
+            Vector<complex<Type> > y(ltSolver(trH(R), b));
+            return Q * y;
+        }
     }
-    else
-    {
-        Matrix<complex<Type> > Q, R;
-        Q = qr.getQ();
-        R = qr.getR();
-        Vector<complex<Type> > y( ltSolver( trH( R ), b ) );
-        return Q * y;
-    }
-}
 
 
 /**
@@ -285,18 +266,17 @@ Vector<complex<Type> > qrLnSolver( const Matrix<complex<Type> > &A,
  * b  --->  The n-by-1 right-hand side vector;
  * x  --->  The n-by-1 minimum norm solution vector.
  */
-template<typename Type>
-Vector<complex<Type> > svdLnSolver( const Matrix<complex<Type> > &A,
-                                    const Vector<complex<Type> > &b )
-{
-    assert( A.rows() == b.size() );
-    assert( A.rows() < A.cols() );
+    template<typename Type>
+    Vector<complex<Type> > svdLnSolver(const Matrix<complex<Type> > &A,
+                                       const Vector<complex<Type> > &b) {
+        assert(A.rows() == b.size());
+        assert(A.rows() < A.cols());
 
-    CSVD<Type> svd;
-    svd.dec( A );
-    Matrix<complex<Type> > U = svd.getU();
-    Matrix<complex<Type> > V = svd.getV();
-    Vector<Type> s = svd.getSV();
+        CSVD<Type> svd;
+        svd.dec(A);
+        Matrix<complex<Type> > U = svd.getU();
+        Matrix<complex<Type> > V = svd.getV();
+        Vector<Type> s = svd.getSV();
 
 //    for( int i=0; i<V.rows(); ++i )
 //        for( int k=0; k<s.dim(); ++k )
@@ -304,5 +284,6 @@ Vector<complex<Type> > svdLnSolver( const Matrix<complex<Type> > &A,
 //
 //    return V * trMult(U,b);
 
-    return V * ( trMult(U,b) / complexVector(s) );
+        return V * (trMult(U, b) / complexVector(s));
+    }
 }

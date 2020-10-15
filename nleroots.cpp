@@ -32,64 +32,60 @@
  *****************************************************************************/
 #include "nleroots.h"
 
-using namespace splab;
+namespace splab {
 
 /**
  * Bisection method for finding function root.
  */
-template <typename Type>
-Vector<Type> seidel( NLEqus<Type> &G, const Vector<Type> &X0,
-                     const Type tol, int maxItr )
-{
-    int N = X0.dim();
-    Vector<Type> X(X0), XNew(X0), tmp(N);
+    template<typename Type>
+    Vector<Type> seidel(NLEqus<Type> &G, const Vector<Type> &X0,
+                        const Type tol, int maxItr) {
+        int N = X0.dim();
+        Vector<Type> X(X0), XNew(X0), tmp(N);
 
-    for( int k=0; k<maxItr; ++k )
-    {
-        // update X by the Seidel iteration method
-        for( int i=1; i<=N; ++i )
-        {
-            tmp = G(XNew);
-            XNew(i) = tmp(i);
+        for (int k = 0; k < maxItr; ++k) {
+            // update X by the Seidel iteration method
+            for (int i = 1; i <= N; ++i) {
+                tmp = G(XNew);
+                XNew(i) = tmp(i);
+            }
+
+            // conditional judgement for stopping iteration
+            Type err = norm(XNew - X),
+                    relErr = err / (norm(XNew) + EPS);
+            if ((err < tol) || (relErr < tol))
+                return XNew;
+
+            X = XNew;
         }
 
-        // conditional judgement for stopping iteration
-        Type err = norm( XNew-X ),
-             relErr = err / ( norm(XNew) + EPS );
-        if( (err < tol) || (relErr < tol) )
-            return XNew;
-
-        X = XNew;
+        cout << "No solution for the specified tolerance!" << endl;
+        return XNew;
     }
-
-    cout << "No solution for the specified tolerance!" << endl;
-	return XNew;
-}
 
 
 /**
  * Newton method for finding function root.
  */
-template <typename Type>
-Vector<Type> newton( NLFuncs<Type> &F, const Vector<Type> &X0,
-                     const Type tol, const Type eps, int maxItr )
-{
-    Vector<Type> X(X0), XNew( X0.dim() );
+    template<typename Type>
+    Vector<Type> newton(NLFuncs<Type> &F, const Vector<Type> &X0,
+                        const Type tol, const Type eps, int maxItr) {
+        Vector<Type> X(X0), XNew(X0.dim());
 
-    for( int k=0; k<maxItr; ++k )
-    {
-        // update X by the Newton iteration method
-        XNew = X - luSolver( F.jacobi(X), F(X) );
+        for (int k = 0; k < maxItr; ++k) {
+            // update X by the Newton iteration method
+            XNew = X - luSolver(F.jacobi(X), F(X));
 
-        // conditional judgement for stopping iteration
-        Type err = norm( XNew-X ),
-             relErr = err / ( norm(XNew) + EPS );
-        if( (err < tol) || (relErr < tol) || (norm(F(XNew)) < eps) )
-            return XNew;
+            // conditional judgement for stopping iteration
+            Type err = norm(XNew - X),
+                    relErr = err / (norm(XNew) + EPS);
+            if ((err < tol) || (relErr < tol) || (norm(F(XNew)) < eps))
+                return XNew;
 
-        X = XNew;
+            X = XNew;
+        }
+
+        cout << "No solution for the specified tolerance!" << endl;
+        return XNew;
     }
-
-    cout << "No solution for the specified tolerance!" << endl;
-	return XNew;
 }

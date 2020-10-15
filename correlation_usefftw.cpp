@@ -32,68 +32,69 @@
  *****************************************************************************/
 #include "correlation_usefftw.h"
 
-using namespace splab;
+namespace splab {
 
 /**
  * Fast auto-correlation by using FFTW.
  */
-template<typename Type>
-inline Vector<Type> fastCorrFFTW( const Vector<Type> &xn, const string &opt )
-{
-    Vector<Type> rn = fastConvFFTW( xn, reverse(xn) );
+    template<typename Type>
+    inline Vector<Type> fastCorrFFTW( const Vector<Type> &xn, const string &opt )
+    {
+        Vector<Type> rn = fastConvFFTW( xn, reverse(xn) );
 
-    biasedProcessing( rn, opt );
+        biasedProcessing( rn, opt );
 
-    return rn;
-}
+        return rn;
+    }
 
 
 /**
  * Fast cross-correlation by using FFTW.
  */
-template<typename Type>
-inline Vector<Type> fastCorrFFTW( const Vector<Type> &xn,
-                                  const Vector<Type> &yn,
-                                  const string &opt )
-{
-    int N = xn.size(),
-        d = N - yn.size();
-    Vector<Type> rn;
-
-    if( d > 0 )
-        rn = fastConvFFTW( xn, reverse(wextend(yn,d,"right","zpd")) );
-    else if( d < 0 )
+    template<typename Type>
+    inline Vector<Type> fastCorrFFTW( const Vector<Type> &xn,
+                                      const Vector<Type> &yn,
+                                      const string &opt )
     {
-        N -= d;
-        rn = fastConvFFTW( wextend(xn,-d,"right","zpd"), reverse(yn) );
+        int N = xn.size(),
+                d = N - yn.size();
+        Vector<Type> rn;
+
+        if( d > 0 )
+            rn = fastConvFFTW( xn, reverse(wextend(yn,d,"right","zpd")) );
+        else if( d < 0 )
+        {
+            N -= d;
+            rn = fastConvFFTW( wextend(xn,-d,"right","zpd"), reverse(yn) );
+        }
+        else
+            rn = fastConvFFTW( xn, reverse(yn) );
+
+        biasedProcessing( rn, opt );
+
+        return rn;
     }
-    else
-        rn = fastConvFFTW( xn, reverse(yn) );
-
-    biasedProcessing( rn, opt );
-
-    return rn;
-}
 
 
 /**
  * Biase processing for correlation.
  */
-template<typename Type>
-static void biasedProcessing( Vector<Type> &rn, const string &opt )
-{
-    int N = (rn.size()+1) / 2;
-
-    if( opt == "biased" )
-        rn /= Type(N);
-    else if( opt == "unbiased" )
+    template<typename Type>
+    static void biasedProcessing( Vector<Type> &rn, const string &opt )
     {
-        int mid = N-1;
-        rn[mid] /= N;
-        for( int i=1; i<N; ++i )
+        int N = (rn.size()+1) / 2;
+
+        if( opt == "biased" )
+            rn /= Type(N);
+        else if( opt == "unbiased" )
         {
-            rn[mid+i] /= (N-i);
-            rn[mid-i] /= (N-i);
+            int mid = N-1;
+            rn[mid] /= N;
+            for( int i=1; i<N; ++i )
+            {
+                rn[mid+i] /= (N-i);
+                rn[mid-i] /= (N-i);
+            }
         }
     }
 }

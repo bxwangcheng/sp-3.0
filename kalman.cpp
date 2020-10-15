@@ -32,7 +32,7 @@
  *****************************************************************************/
 #include "kalman.h"
 
-using namespace splab;
+namespace splab {
 
 /**
  * The simple Kalman filter for one step.
@@ -46,31 +46,31 @@ using namespace splab;
  * initDiagV ---> diagonal vector for initializing the covariance matrix of
  *                state estimation uncertainty
  */
-template <typename Type>
-Vector<Type> kalman( const Matrix<Type> &A, const Matrix<Type> &C,
-                     const Matrix<Type> &Q, const Matrix<Type> &R,
-                     const Vector<Type> &xPrev, const Vector<Type> &y,
-                     const Vector<Type> &initDiagV )
-{
-    int N = xPrev.size();
+    template<typename Type>
+    Vector<Type> kalman(const Matrix<Type> &A, const Matrix<Type> &C,
+                        const Matrix<Type> &Q, const Matrix<Type> &R,
+                        const Vector<Type> &xPrev, const Vector<Type> &y,
+                        const Vector<Type> &initDiagV) {
+        int N = xPrev.size();
 
-    // covariance matrix of state estimation uncertainty
-    static Matrix<Type> V = diag(initDiagV);
+        // covariance matrix of state estimation uncertainty
+        static Matrix<Type> V = diag(initDiagV);
 
-    // previoused state vector
-    Vector<Type> xPred = A * xPrev;
+        // previoused state vector
+        Vector<Type> xPred = A * xPrev;
 
-    // inovation
-    Vector<Type> alpha = y - C * xPred;
+        // inovation
+        Vector<Type> alpha = y - C * xPred;
 
-    Matrix<Type> CTran = trT( C );
-    Matrix<Type> VPred = A*V*trT(A) + Q;
+        Matrix<Type> CTran = trT(C);
+        Matrix<Type> VPred = A * V * trT(A) + Q;
 
-    // Kalman gain matrix
-    Matrix<Type> KGain = VPred*CTran * inv(C*VPred*CTran+R);
+        // Kalman gain matrix
+        Matrix<Type> KGain = VPred * CTran * inv(C * VPred * CTran + R);
 
-    V = ( eye(N,Type(1.0)) - KGain*C ) * VPred;
+        V = (eye(N, Type(1.0)) - KGain * C) * VPred;
 
-    // return the estimation of the state vector
-    return xPred + KGain * alpha;
+        // return the estimation of the state vector
+        return xPred + KGain * alpha;
+    }
 }

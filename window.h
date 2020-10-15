@@ -44,20 +44,187 @@
 
 namespace splab
 {
+    /**
+ * The zeroth N modified Bessel function of the first kind.
+ */
+    template<typename Type>
+    Type I0(Type alpha) {
+        double J = 1.0,
+                K = alpha / 2.0,
+                iOld = 1.0,
+                iNew;
+        bool converge = false;
 
-    template<typename Type> Vector<Type> window( const string&, int, Type );
-	template<typename Type> Vector<Type> window( const string&, int,
-                                                 Type, Type );
+        // Use series expansion definition of Bessel.
+        for (int i = 1; i < MAXTERM; ++i) {
+            J *= K / i;
+            iNew = iOld + J * J;
 
-    template<typename Type> Vector<Type> rectangle( int, Type );
-    template<typename Type> Vector<Type> bartlett( int, Type );
-    template<typename Type> Vector<Type> hanning( int, Type );
-    template<typename Type> Vector<Type> hamming( int, Type );
-    template<typename Type> Vector<Type> blackman( int, Type );
-    template<typename Type> Vector<Type> kaiser( int, Type, Type );
-    template<typename Type> Vector<Type> gauss( int, Type, Type );
+            if ((iNew - iOld) < EPS) {
+                converge = true;
+                break;
+            }
+            iOld = iNew;
+        }
 
-	template<typename Type> Type I0( Type alpha );
+        if (!converge)
+            return Type(0);
+
+        return Type(iNew);
+    }
+
+
+    /**
+ * Calculates rectangle window coefficients.
+ */
+    template<typename Type>
+    Vector<Type> rectangle(int N, Type amp) {
+        Vector<Type> win(N);
+
+        for (int i = 0; i < (N + 1) / 2; ++i) {
+            win[i] = amp;
+            win[N - 1 - i] = win[i];
+        }
+
+        return win;
+    }
+
+
+/**
+ * Calculates bartlett window coefficients.
+ */
+    template<typename Type>
+    Vector<Type> bartlett(int N, Type amp) {
+        Vector<Type> win(N);
+
+        for (int i = 0; i < (N + 1) / 2; ++i) {
+            win[i] = amp * 2 * i / (N - 1);
+            win[N - 1 - i] = win[i];
+        }
+
+        return win;
+    }
+
+
+/**
+ * Calculates hanning window coefficients.
+ */
+    template<typename Type>
+    Vector<Type> hanning(int N, Type amp) {
+        Vector<Type> win(N);
+
+        for (int i = 0; i < (N + 1) / 2; ++i) {
+            win[i] = amp * Type(0.5 - 0.5 * cos(TWOPI * i / (N - 1)));
+            win[N - 1 - i] = win[i];
+        }
+
+        return win;
+    }
+
+
+/**
+ * Calculates hamming window coefficients.
+ */
+    template<typename Type>
+    Vector<Type> hamming(int N, Type amp) {
+        Vector<Type> win(N);
+
+        for (int i = 0; i < (N + 1) / 2; ++i) {
+            win[i] = amp * Type(0.54 - 0.46 * cos(TWOPI * i / (N - 1.0)));
+            win[N - 1 - i] = win[i];
+        }
+
+        return win;
+    }
+
+
+/**
+ * Calculates hamming window coefficients.
+ */
+    template<typename Type>
+    Vector<Type> blackman(int N, Type amp) {
+        Vector<Type> win(N);
+
+        for (int i = 0; i < (N + 1) / 2; ++i) {
+            win[i] = amp * Type(0.42 - 0.50 * cos(TWOPI * i / (N - 1.0))
+                                + 0.08 * cos(2 * TWOPI * i / (N - 1.0)));
+            win[N - 1 - i] = win[i];
+        }
+
+        return win;
+    }
+
+
+/**
+ * Calculates hamming window coefficients.
+ */
+    template<typename Type>
+    Vector<Type> kaiser(int N, Type alpha, Type amp) {
+        Vector<Type> win(N);
+
+        for (int i = 0; i < (N + 1) / 2; ++i) {
+            Type beta = 2 * alpha * Type(sqrt(i * (N - i - 1.0)) / (N - 1.0));
+            win[i] = amp * I0(beta) / I0(alpha);
+            win[N - 1 - i] = win[i];
+        }
+
+        return win;
+    }
+
+
+/**
+ * Calculates gauss window coefficients. "Alpha: is a optional parameter,
+ * the default value is 2.5.
+ */
+    template<typename Type>
+    Vector<Type> gauss(int N, Type alpha, Type amp) {
+        Vector<Type> win(N);
+        Type center = (N - 1) / Type(2);
+
+        for (int i = 0; i < (N + 1) / 2; ++i) {
+            Type tmp = alpha * (i - center) / center;
+            win[i] = amp * Type(exp(-0.5 * tmp * tmp));
+            win[N - 1 - i] = win[i];
+        }
+
+        return win;
+    }
+
+
+
+
+    /**
+ * Get the specified window.
+ */
+    template<typename Type>
+    Vector<Type> window(const string &wnName, int N, Type amp) {
+        if (wnName == "Rectangle")
+            return rectangle(N, amp);
+        else if (wnName == "Bartlett")
+            return bartlett(N, amp);
+        else if (wnName == "Hanning")
+            return hanning(N, amp);
+        else if (wnName == "Hamming")
+            return hamming(N, amp);
+        else if (wnName == "Blackman")
+            return blackman(N, amp);
+        else {
+            cerr << "No such type window!" << endl;
+            return Vector<Type>(0);
+        }
+    }
+
+    template<typename Type>
+    Vector<Type> window(const string &wnName, int N, Type alpha, Type amp) {
+        if (wnName == "Kaiser")
+            return kaiser(N, alpha, amp);
+        else if (wnName == "Gauss")
+            return gauss(N, alpha, amp);
+        else {
+            cerr << "No such type window!" << endl;
+            return Vector<Type>(0);
+        }
+    }
 
 
 

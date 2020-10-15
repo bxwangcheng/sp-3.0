@@ -75,46 +75,248 @@ namespace splab
         typedef const   Type*   const_iterator;
 
         // constructors and destructor
-        Vector();
-        Vector( const Vector<Type> &v );
-        Vector( int length, const Type &x = Type(0) );
-        Vector( int length, const Type *array );
-        ~Vector();
+        Vector()
+            : pv0(0), pv1(0), nRow(0) {
 
-        // assignments
-        Vector<Type>& operator=( const Vector<Type> &v );
-        Vector<Type>& operator=( const Type &x );
+        }
 
-        // accessors
-        Type& operator[]( int i );
-        const Type& operator[]( int i ) const;
-        Type& operator()( int i );
-        const Type& operator()( int i ) const;
+        Vector( const Vector<Type> &v )
+                : pv0(0), pv1(0), nRow(0) {
+            init(v.nRow);
+            copyFromArray(v.pv0);
+        }
+
+        Vector( int length, const Type &x = Type(0) )
+                :  pv0(0), pv1(0), nRow(0) {
+            init(length);
+            setByScalar(x);
+        }
+
+        Vector( int length, const Type *array )
+                :  pv0(0), pv1(0), nRow(0) {
+            init(length);
+            copyFromArray(array);
+        }
+
+        ~Vector() {
+            destroy();
+        }
+
+        /**
+        * overload evaluate operator= from vector to vector
+        */
+        Vector<Type>& operator=( const Vector<Type> &v ) {
+            if (pv0 == v.pv0)
+                return *this;
+
+            if (nRow == v.nRow)
+                copyFromArray(v.pv0);
+            else {
+                destroy();
+                init(v.nRow);
+                copyFromArray(v.pv0);
+            }
+
+            return *this;
+        }
+
+        /**
+        * overload evaluate operator= from scalar to vector
+        */
+        Vector<Type>& operator=( const Type &x ) {
+            setByScalar(x);
+
+            return *this;
+        }
+
+        /**
+        * overload operator [] for 0-offset access
+        */
+        Type& operator[]( int i ) {
+#ifdef BOUNDS_CHECK
+        assert( 0 <= i );
+        assert( i < nRow );
+#endif
+
+            return pv0[i];
+        }
+
+        /**
+        * overload operator () for 1-offset access
+        */
+        const Type& operator[]( int i ) const {
+    #ifdef BOUNDS_CHECK
+            assert( 0 <= i );
+            assert( i < nRow );
+    #endif
+
+            return pv0[i];
+        }
+
+        Type& operator()( int i ) {
+    #ifdef BOUNDS_CHECK
+            assert( 1 <= i );
+            assert( i <= nRow );
+    #endif
+
+            return pv1[i];
+        }
+
+        const Type& operator()( int i ) const {
+    #ifdef BOUNDS_CHECK
+            assert( 1 <= i );
+            assert( i <= nRow );
+    #endif
+
+            return pv1[i];
+        }
 
         // iterators
-        iterator begin();
-        const_iterator begin() const;
-        iterator end();
-        const_iterator end() const;
+        inline iterator begin() {
+            return pv0;
+        }
 
-        // type conversion
-        operator Type*();
-        operator const Type*() const;
+        inline const_iterator begin() const {
+            return pv0;
+        }
+
+        inline iterator end() {
+            return pv0 + nRow;
+        }
+
+        inline const_iterator end() const {
+            return pv0 + nRow;
+        }
+
+        /**
+        * type conversion functions
+        */
+        inline operator Type*() {
+            return pv0;
+        }
+
+        inline operator const Type*() const {
+            return pv0;
+        }
 
         // others
-        int size() const;
-        int dim() const;
-        Vector<Type>& resize( int length );
+
+        /**
+        * get the vector's total size
+        */
+        inline int size() const {
+            return nRow;
+        }
+
+        /**
+        * get the vector's dimension
+        */
+        inline int dim() const {
+            return nRow;
+        }
+
+        /**
+        * reallocate vector's size
+        */
+        Vector<Type>& resize( int length ) {
+            if (nRow == length)
+                return *this;
+
+            destroy();
+            init(length);
+
+            return *this;
+        }
 
         // computed assignment
-        Vector<Type>& operator+=( const Type& );
-        Vector<Type>& operator-=( const Type& );
-        Vector<Type>& operator*=( const Type& );
-        Vector<Type>& operator/=( const Type& );
-        Vector<Type>& operator+=( const Vector<Type>& );
-        Vector<Type>& operator-=( const Vector<Type>& );
-        Vector<Type>& operator*=( const Vector<Type>& );
-        Vector<Type>& operator/=( const Vector<Type>& );
+        /**
+        * compound assignment operators +=
+        */
+        Vector<Type> &operator+=(const Type &x) {
+            iterator itr = (*this).begin();
+            while (itr != (*this).end())
+                *itr++ += x;
+
+            return *this;
+        }
+
+        Vector<Type> &operator+=(const Vector<Type> &rhs) {
+            assert(nRow == rhs.dim());
+
+            iterator itrL = (*this).begin();
+            const_iterator itrR = rhs.begin();
+            while (itrL != (*this).end())
+                *itrL++ += *itrR++;
+
+            return *this;
+        }
+
+
+        /**
+         * compound assignment operators -=
+         */
+        Vector<Type> &operator-=(const Type &x) {
+            iterator itr = (*this).begin();
+            while (itr != (*this).end())
+                *itr++ -= x;
+
+            return *this;
+        }
+
+        Vector<Type> &operator-=(const Vector<Type> &rhs) {
+            assert(nRow == rhs.dim());
+
+            iterator itrL = (*this).begin();
+            const_iterator itrR = rhs.begin();
+            while (itrL != (*this).end())
+                *itrL++ -= *itrR++;
+
+            return *this;
+        }
+
+        /**
+        * compound assignment operators *=
+        */
+        Vector<Type>& operator*=( const Type &x) {
+            iterator itr = (*this).begin();
+            while (itr != (*this).end())
+                *itr++ *= x;
+
+            return *this;
+        }
+
+        Vector<Type>& operator*=( const Vector<Type> &rhs ) {
+            assert(nRow == rhs.dim());
+
+            iterator itrL = (*this).begin();
+            const_iterator itrR = rhs.begin();
+            while (itrL != (*this).end())
+                *itrL++ *= *itrR++;
+
+            return *this;
+        }
+
+        /**
+        * compound assignment operators /=
+        */
+        Vector<Type> &operator/=(const Type &x) {
+            iterator itr = (*this).begin();
+            while (itr != (*this).end())
+                *itr++ /= x;
+
+            return *this;
+        }
+
+        Vector<Type> &operator/=(const Vector<Type> &rhs) {
+            assert(nRow == rhs.dim());
+
+            iterator itrL = (*this).begin();
+            const_iterator itrR = rhs.begin();
+            while (itrL != (*this).end())
+                *itrL++ /= *itrR++;
+
+            return *this;
+        }
 
     private:
 
@@ -127,72 +329,442 @@ namespace splab
         // the row number of vector
         int	 nRow;
 
-        void init( int length );
-        void copyFromArray( const Type *v );
-        void setByScalar( const Type &x );
-        void destroy();
+        /**
+        * initialize
+        */
+        void init( int length ) {
+            assert(pv0 == NULL);
+            pv0 = new Type[length];
+
+            assert(pv0 != NULL);
+            pv1 = pv0 - 1;
+            nRow = length;
+        }
+
+        /**
+        * copy vector from normal array
+        */
+        inline void copyFromArray( const Type *v ) {
+            for (int i = 0; i < nRow; ++i)
+                pv0[i] = v[i];
+        }
+
+        /**
+        * set vector by a scalar
+        */
+        inline void setByScalar( const Type &x ) {
+            for (int i = 0; i < nRow; ++i)
+                pv0[i] = x;
+        }
+
+        /**
+        * destroy the vector
+        */
+        void destroy() {
+            if (pv0 == NULL)
+                return;
+
+            delete[]pv0;
+
+            pv0 = NULL;
+            pv1 = NULL;
+        }
 
     };
     // class Vector
 
 
     // input and output
+    /**
+     * Overload the output stream function.
+     */
     template<typename Type>
-    ostream& operator<<( ostream&, const Vector<Type>& );
+    ostream &operator<<(ostream &out, const Vector<Type> &v) {
+        int N = v.dim();
+        out << "size: " << N << " by 1" << "\n";
+
+        for (int i = 0; i < N; ++i)
+            out << v[i] << " " << "\n";
+
+        return out;
+    }
+
+
+    /**
+     * Overload the input stream function.
+     */
     template<typename Type>
-    istream& operator>>( istream&, Vector<Type>& );
+    istream &operator>>(istream &in, Vector<Type> &v) {
+        int N;
+        in >> N;
+
+        if (!(N == v.dim()))
+            v.resize(N);
+
+        for (int i = 0; i < N; ++i)
+            in >> v[i];
+
+        return in;
+    }
 
     // arithmetic operators
+    /**
+     * get negative vector
+     */
     template<typename Type>
-    Vector<Type> operator-( const Vector<Type>& );
+    Vector<Type> operator-(const Vector<Type> &v) {
+        Vector<Type> tmp(v.dim());
+        typename Vector<Type>::iterator itrL = tmp.begin();
+        typename Vector<Type>::const_iterator itrR = v.begin();
+
+        while (itrL != tmp.end())
+            *itrL++ = -(*itrR++);
+
+        return tmp;
+    }
+
+
+    /**
+     * vector-scalar addition.
+     */
     template<typename Type>
-    Vector<Type> operator+( const Vector<Type>&, const Type& );
+    inline Vector<Type> operator+(const Vector<Type> &v, const Type &x) {
+        Vector<Type> tmp(v);
+        return tmp += x;
+    }
+
     template<typename Type>
-    Vector<Type> operator+( const Type&, const Vector<Type>& );
+    inline Vector<Type> operator+(const Type &x, const Vector<Type> &v) {
+        return v + x;
+    }
+
+
+    /**
+     * vector-scalar substraction.
+     */
     template<typename Type>
-    Vector<Type> operator+( const Vector<Type>&, const Vector<Type>& );
+    inline Vector<Type> operator-(const Vector<Type> &v, const Type &x) {
+        Vector<Type> tmp(v);
+        return tmp -= x;
+    }
+
     template<typename Type>
-    Vector<Type> operator-( const Vector<Type>&, const Type& );
+    inline Vector<Type> operator-(const Type &x, const Vector<Type> &v) {
+        Vector<Type> tmp(v);
+        return -tmp += x;
+    }
+
+
+    /**
+     * vector-scalar multiplication.
+     */
     template<typename Type>
-    Vector<Type> operator-( const Type&, const Vector<Type>& );
+    inline Vector<Type> operator*(const Vector<Type> &v, const Type &x) {
+        Vector<Type> tmp(v);
+        return tmp *= x;
+    }
+
     template<typename Type>
-    Vector<Type> operator-( const Vector<Type>&, const Vector<Type>& );
+    inline Vector<Type> operator*(const Type &x, const Vector<Type> &v) {
+        return v * x;
+    }
+
+
+    /**
+     * vector-scalar division.
+     */
     template<typename Type>
-    Vector<Type> operator*( const Vector<Type>&, const Type& );
+    inline Vector<Type> operator/(const Vector<Type> &v, const Type &x) {
+        Vector<Type> tmp(v);
+        return tmp /= x;
+    }
+
     template<typename Type>
-    Vector<Type> operator*( const Type&, const Vector<Type>& );
+    inline Vector<Type> operator/(const Type &x, const Vector<Type> &v) {
+        int N = v.dim();
+        Vector<Type> tmp(N);
+
+        for (int i = 0; i < N; ++i)
+            tmp[i] = x / v[i];
+
+        return tmp;
+    }
+
+
+    /**
+     * vector-vector addition.
+     */
     template<typename Type>
-    Vector<Type> operator*( const Vector<Type>&, const Vector<Type>& );
+    inline Vector<Type> operator+(const Vector<Type> &v1, const Vector<Type> &v2) {
+        Vector<Type> tmp(v1);
+        return tmp += v2;
+    }
+
+
+    /**
+     * vector-vector substraction.
+     */
     template<typename Type>
-    Vector<Type> operator/( const Vector<Type>&, const Type& );
+    inline Vector<Type> operator-(const Vector<Type> &v1, const Vector<Type> &v2) {
+        Vector<Type> tmp(v1);
+        return tmp -= v2;
+    }
+
+
+    /**
+     * vector-vector multiplication.
+     */
     template<typename Type>
-    Vector<Type> operator/( const Type&, const Vector<Type>& );
+    inline Vector<Type> operator*(const Vector<Type> &v1, const Vector<Type> &v2) {
+        Vector<Type> tmp(v1);
+        return tmp *= v2;
+    }
+
+
+    /**
+     * vector-vector division.
+     */
     template<typename Type>
-    Vector<Type> operator/( const Vector<Type>&, const Vector<Type>& );
+    inline Vector<Type> operator/(const Vector<Type> &v1, const Vector<Type> &v2) {
+        Vector<Type> tmp(v1);
+        return tmp /= v2;
+    }
 
     // dot product
+    /**
+     * Inner product for vectors.
+     */
     template<typename Type>
-    Type dotProd( const Vector<Type>&, const Vector<Type>& );
-    template<typename Type> complex<Type>
-    dotProd( const Vector<complex<Type> >&, const Vector<complex<Type> >& );
+    Type dotProd(const Vector<Type> &v1, const Vector<Type> &v2) {
+        assert(v1.dim() == v2.dim());
+
+        Type sum = 0;
+        typename Vector<Type>::const_iterator itr1 = v1.begin();
+        typename Vector<Type>::const_iterator itr2 = v2.begin();
+
+        while (itr1 != v1.end())
+            sum += (*itr1++) * (*itr2++);
+
+        return sum;
+    }
+
+
+    /**
+     * Inner product for vectors.
+     */
+    template<typename Type>
+    complex<Type> dotProd(const Vector<complex<Type> > &v1,
+                          const Vector<complex<Type> > &v2) {
+        assert(v1.dim() == v2.dim());
+
+        complex<Type> sum = 0;
+        typename Vector<complex<Type> >::const_iterator itr1 = v1.begin();
+        typename Vector<complex<Type> >::const_iterator itr2 = v2.begin();
+
+        while (itr1 != v1.end())
+            sum += (*itr1++) * conj(*itr2++);
+
+        return sum;
+    }
 
     // utilities
-    template<typename Type> Type sum( const Vector<Type>& );
-    template<typename Type> Type min( const Vector<Type>& );
-    template<typename Type> Type max( const Vector<Type>& );
-    template<typename Type> Type norm( const Vector<Type>& );
-    template<typename Type> Type norm( const Vector<complex<Type> >& );
-    template<typename Type> void swap( Vector<Type>&, Vector<Type>& );
-    template<typename Type> Vector<Type> linspace( Type, Type, int );
-    template<typename Type> Vector<Type> abs( const Vector<complex<Type> >& );
-    template<typename Type> Vector<Type> arg( const Vector<complex<Type> >& );
-    template<typename Type> Vector<Type> real( const Vector<complex<Type> >& );
-    template<typename Type> Vector<Type> imag( const Vector<complex<Type> >& );
+    /**
+    * Vector's sum.
+    */
     template<typename Type>
-    Vector<complex<Type> > complexVector( const Vector<Type>& );
+    Type sum(const Vector<Type> &v) {
+        Type sum = 0;
+        typename Vector<Type>::const_iterator itr = v.begin();
+
+        while (itr != v.end())
+            sum += *itr++;
+
+        return sum;
+    }
+
+    /**
+    * Minimum value of vector.
+    */
     template<typename Type>
-    Vector<complex<Type> > complexVector( const Vector<Type>&,
-                                          const Vector<Type>&  );
+    Type min(const Vector<Type> &v) {
+        Type m = v[0];
+        for (int i = 1; i < v.size(); ++i)
+            if (m > v[i])
+                m = v[i];
+
+        return m;
+    }
+
+    /**
+    * Maximum value of vector.
+    */
+    template<typename Type>
+    Type max(const Vector<Type> &v) {
+        Type M = v[0];
+        for (int i = 1; i < v.size(); ++i)
+            if (M < v[i])
+                M = v[i];
+
+        return M;
+    }
+
+    /**
+    * Vector's norm in Euclidean space.
+    */
+    template<typename Type>
+    Type norm(const Vector<Type> &v) {
+        Type sum = 0;
+        typename Vector<Type>::const_iterator itr = v.begin();
+
+        while (itr != v.end()) {
+            sum += (*itr) * (*itr);
+            itr++;
+        }
+
+        return Type(sqrt(1.0 * sum));
+    }
+
+    /**
+    * Vector's norm in Euclidean space.
+    */
+    template<typename Type>
+    Type norm(const Vector<complex<Type> > &v) {
+        Type sum = 0;
+        typename Vector<complex<Type> >::const_iterator itr = v.begin();
+
+        while (itr != v.end())
+            sum += norm(*itr++);
+
+        return Type(sqrt(1.0 * sum));
+    }
+
+    /**
+    * return vector's reversion
+    */
+    template<typename Type>
+    void swap(Vector<Type> &lhs, Vector<Type> &rhs) {
+        typename Vector<Type>::iterator itrL = lhs.begin(),
+                itrR = rhs.begin();
+
+        while (itrL != lhs.end())
+            std::swap(*itrL++, *itrR++);
+    }
+
+    /**
+    * Generates a vector of n points linearly spaced between and
+    * including a and b.
+    */
+    template<typename Type>
+    Vector<Type> linspace(Type a, Type b, int n) {
+        if (n < 1)
+            return Vector<Type>();
+        else if (n == 1)
+            return Vector<Type>(1, a);
+        else {
+            Type dx = (b - a) / (n - 1);
+
+            Vector<Type> tmp(n);
+            for (int i = 0; i < n; ++i)
+                tmp[i] = a + i * dx;
+
+            return tmp;
+        }
+    }
+
+    /**
+    * Get magnitude of a complex vector.
+    */
+    template<typename Type>
+    Vector<Type> abs(const Vector<complex<Type> > &v) {
+        Vector<Type> tmp(v.dim());
+        typename Vector<Type>::iterator itrL = tmp.begin();
+        typename Vector<complex<Type> >::const_iterator itrR = v.begin();
+
+        while (itrL != tmp.end())
+            *itrL++ = abs(*itrR++);
+
+        return tmp;
+    }
+
+    /**
+    * Get angle of a complex vector.
+    */
+    template<typename Type>
+    Vector<Type> arg(const Vector<complex<Type> > &v) {
+        Vector<Type> tmp(v.dim());
+        typename Vector<Type>::iterator itrL = tmp.begin();
+        typename Vector<complex<Type> >::const_iterator itrR = v.begin();
+
+        while (itrL != tmp.end())
+            *itrL++ = arg(*itrR++);
+
+        return tmp;
+    }
+
+    /**
+    * Get real part of a complex vector.
+    */
+    template<typename Type>
+    Vector<Type> real(const Vector<complex<Type> > &v) {
+        Vector<Type> tmp(v.dim());
+        typename Vector<Type>::iterator itrL = tmp.begin();
+        typename Vector<complex<Type> >::const_iterator itrR = v.begin();
+
+        while (itrL != tmp.end())
+            *itrL++ = (*itrR++).real();
+
+        return tmp;
+    }
+
+    /**
+    * Get imaginary part of a complex vector.
+    */
+    template<typename Type>
+    Vector<Type> imag(const Vector<complex<Type> > &v) {
+        Vector<Type> tmp(v.dim());
+        typename Vector<Type>::iterator itrL = tmp.begin();
+        typename Vector<complex<Type> >::const_iterator itrR = v.begin();
+
+        while (itrL != tmp.end())
+            *itrL++ = (*itrR++).imag();
+
+        return tmp;
+    }
+
+    /**
+    * Convert real vector to complex vector.
+    */
+    template<typename Type>
+    Vector<complex<Type> > complexVector(const Vector<Type> &rv) {
+        int N = rv.dim();
+
+        Vector<complex<Type> > cv(N);
+        typename Vector<complex<Type> >::iterator itrL = cv.begin();
+        typename Vector<Type>::const_iterator itrR = rv.begin();
+
+        while (itrR != rv.end())
+            *itrL++ = *itrR++;
+
+        return cv;
+    }
+
+    template<typename Type>
+    Vector<complex<Type> > complexVector(const Vector<Type> &vR,
+                                         const Vector<Type> &vI) {
+        int N = vR.dim();
+
+        assert(N == vI.dim());
+
+        Vector<complex<Type> > cv(N);
+        typename Vector<complex<Type> >::iterator itrC = cv.begin();
+        typename Vector<Type>::const_iterator itrR = vR.begin(),
+                itrI = vI.begin();
+
+        while (itrC != cv.end())
+            *itrC++ = complex<Type>(*itrR++, *itrI++);
+
+        return cv;
+    }
 
 
 

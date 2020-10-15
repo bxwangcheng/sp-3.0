@@ -32,7 +32,7 @@
  *****************************************************************************/
 #include "parametricpse.h"
 
-using namespace splab;
+namespace splab {
 
 /**
  * The Yule-Walker method for AR power spectral estimation.
@@ -41,21 +41,20 @@ using namespace splab;
  * sigma2   : the variance of exciting white noise
  * return   : coefficients of AR model --- a(0), a(1), ..., a(p)
  */
-template <typename Type>
-Vector<Type> yulewalkerPSE( const Vector<Type> &xn, int p, Type &sigma2 )
-{
-    int N = xn.size();
+    template<typename Type>
+    Vector<Type> yulewalkerPSE(const Vector<Type> &xn, int p, Type &sigma2) {
+        int N = xn.size();
 
-    assert( p <= N );
+        assert(p <= N);
 
-    Vector<Type> rn(p+1);
-    for( int i=0; i<=p; ++i )
-        for( int k=0; k<N-i; ++k )
-            rn[i] += xn[k+i]*xn[k];
-    rn /= Type(N);
+        Vector<Type> rn(p + 1);
+        for (int i = 0; i <= p; ++i)
+            for (int k = 0; k < N - i; ++k)
+                rn[i] += xn[k + i] * xn[k];
+        rn /= Type(N);
 
-    return levinson( rn, sigma2 );
-}
+        return levinson(rn, sigma2);
+    }
 
 
 /**
@@ -65,49 +64,44 @@ Vector<Type> yulewalkerPSE( const Vector<Type> &xn, int p, Type &sigma2 )
  * sigma2   : the variance of exciting white noise
  * return   : coefficients of AR model --- a(0), a(1), ..., a(p)
  */
-template <typename Type>
-Vector<Type> burgPSE( const Vector<Type> &xn, int p, Type &sigma2 )
-{
-    int N = xn.size();
-    Type numerator, denominator;
-    Vector<Type> ak(p+1), akPrev(p+1), ef(N), eb(N);
+    template<typename Type>
+    Vector<Type> burgPSE(const Vector<Type> &xn, int p, Type &sigma2) {
+        int N = xn.size();
+        Type numerator, denominator;
+        Vector<Type> ak(p + 1), akPrev(p + 1), ef(N), eb(N);
 
-    ak[0] = Type(1.0);
-    sigma2 = sum(xn*xn) / Type(N);
+        ak[0] = Type(1.0);
+        sigma2 = sum(xn * xn) / Type(N);
 
-    for( int i=1; i<N; ++i )
-    {
-        ef[i] = xn[i];
-        eb[i-1] = xn[i-1];
-    }
-
-    for( int k=1; k<=p; ++k )
-    {
-        numerator = 0;
-        denominator = 0;
-        for( int i=k; i<N; ++i )
-        {
-            numerator += ef[i]*eb[i-1];
-            denominator += ef[i]*ef[i] + eb[i-1]*eb[i-1];
+        for (int i = 1; i < N; ++i) {
+            ef[i] = xn[i];
+            eb[i - 1] = xn[i - 1];
         }
-        ak[k] = -2*numerator/denominator;
 
-        for( int i=1; i<k; ++i )
-            akPrev[i] = ak[i] + ak[k]*ak[k-i];
-        for( int i=1; i<k; ++i )
-            ak[i] = akPrev[i];
+        for (int k = 1; k <= p; ++k) {
+            numerator = 0;
+            denominator = 0;
+            for (int i = k; i < N; ++i) {
+                numerator += ef[i] * eb[i - 1];
+                denominator += ef[i] * ef[i] + eb[i - 1] * eb[i - 1];
+            }
+            ak[k] = -2 * numerator / denominator;
 
-        sigma2 *= 1 - ak[k]*ak[k];
+            for (int i = 1; i < k; ++i)
+                akPrev[i] = ak[i] + ak[k] * ak[k - i];
+            for (int i = 1; i < k; ++i)
+                ak[i] = akPrev[i];
 
-        for( int i=N-1; i>k; --i )
-        {
-            ef[i] = ef[i] + ak[k]*eb[i-1];
-            eb[i-1] = eb[i-2] + ak[k]*ef[i-1];
+            sigma2 *= 1 - ak[k] * ak[k];
+
+            for (int i = N - 1; i > k; --i) {
+                ef[i] = ef[i] + ak[k] * eb[i - 1];
+                eb[i - 1] = eb[i - 2] + ak[k] * ef[i - 1];
+            }
         }
-    }
 
-    return ak;
-}
+        return ak;
+    }
 
 
 /**
@@ -118,16 +112,15 @@ Vector<Type> burgPSE( const Vector<Type> &xn, int p, Type &sigma2 )
  * sigma2   : the variance of exciting white noise
  * return   : coefficients of AR model --- a(0), a(1), ..., a(p)
  */
-template <typename Type>
-Vector<Type> fblplsPSE( const Vector<Type> &xn, int p, Type &sigma2 )
-{
-    int N = xn.size(),
-        M = 2*(N-p);
+    template<typename Type>
+    Vector<Type> fblplsPSE(const Vector<Type> &xn, int p, Type &sigma2) {
+        int N = xn.size(),
+                M = 2 * (N - p);
 
-    Vector<Type> u(p+1);
-    u[0] = Type(1.0);
+        Vector<Type> u(p + 1);
+        u[0] = Type(1.0);
 
-    Matrix<Type> X(M,p+1);
+        Matrix<Type> X(M, p + 1);
 //    for( int i=0; i<=p; ++i )
 //    {
 //        for( int j=0; j<N-p; ++j )
@@ -135,20 +128,20 @@ Vector<Type> fblplsPSE( const Vector<Type> &xn, int p, Type &sigma2 )
 //        for( int j=p; j<N; ++j )
 //            X[j][i] = xn[j-i];
 //    }
-    for( int i=0; i<N-p; ++i )
-        for( int j=0; j<=p; ++j )
-            X[i][j] = xn[i+j];
-    for( int i=p; i<N; ++i )
-        for( int j=0; j<=p; ++j )
-            X[i][j] = xn[i-j];
+        for (int i = 0; i < N - p; ++i)
+            for (int j = 0; j <= p; ++j)
+                X[i][j] = xn[i + j];
+        for (int i = p; i < N; ++i)
+            for (int j = 0; j <= p; ++j)
+                X[i][j] = xn[i - j];
 
-    Matrix<Type> Rp = trMult(X,X) / Type(M);
-    Vector<Type> ak = luSolver( Rp, u );
-    sigma2 = 1/ak[0];
-    ak *= sigma2;
+        Matrix<Type> Rp = trMult(X, X) / Type(M);
+        Vector<Type> ak = luSolver(Rp, u);
+        sigma2 = 1 / ak[0];
+        ak *= sigma2;
 
-    return ak;
-}
+        return ak;
+    }
 
 
 /**
@@ -160,58 +153,55 @@ Vector<Type> fblplsPSE( const Vector<Type> &xn, int p, Type &sigma2 )
  * return   : spectral density at L frequencies:
  *            w = 0, 2*pi/L, ..., 2*pi(L-1)/L
  */
-template <typename Type>
-Vector<Type> armaPSD( const Vector<Type> &ak, const Vector<Type> &bk,
-                      const Type &sigma2, int L )
-{
-    int p = ak.size()-1,
-        q = bk.size()-1;
-    Vector<Type> Xk(L);
+    template<typename Type>
+    Vector<Type> armaPSD(const Vector<Type> &ak, const Vector<Type> &bk,
+                         const Type &sigma2, int L) {
+        int p = ak.size() - 1,
+                q = bk.size() - 1;
+        Vector<Type> Xk(L);
 
-    Type zRe, zIm, aRe, aIm, bRe, bIm,
-         Xre, Xim,
-         re, im;
-	Type omega,
-         den, numRe, numIm;
+        Type zRe, zIm, aRe, aIm, bRe, bIm,
+                Xre, Xim,
+                re, im;
+        Type omega,
+                den, numRe, numIm;
 
-	for( int k=0; k<L; ++k )
-	{
-		omega = Type(TWOPI*k/L);
-		zRe = cos(-omega);
-		zIm = sin(-omega);
+        for (int k = 0; k < L; ++k) {
+            omega = Type(TWOPI * k / L);
+            zRe = cos(-omega);
+            zIm = sin(-omega);
 
-        // numerator
-		bRe = 0;
-		bIm = 0;
-		for( int i=q; i>0; --i )
-		{
-			re = bRe;
-			im = bIm;
-			bRe = (re+bk[i])*zRe - im*zIm;
-			bIm = (re+bk[i])*zIm + im*zRe;
-		}
-		bRe += bk[0];
+            // numerator
+            bRe = 0;
+            bIm = 0;
+            for (int i = q; i > 0; --i) {
+                re = bRe;
+                im = bIm;
+                bRe = (re + bk[i]) * zRe - im * zIm;
+                bIm = (re + bk[i]) * zIm + im * zRe;
+            }
+            bRe += bk[0];
 
-        // denominator
-		aRe = 0;
-		aIm = 0;
-		for( int i=p; i>0; --i )
-		{
-			re = aRe;
-			im = aIm;
-			aRe = (re+ak[i])*zRe - im*zIm;
-			aIm = (re+ak[i])*zIm + im*zRe;
-		}
-		aRe += ak[0];
+            // denominator
+            aRe = 0;
+            aIm = 0;
+            for (int i = p; i > 0; --i) {
+                re = aRe;
+                im = aIm;
+                aRe = (re + ak[i]) * zRe - im * zIm;
+                aIm = (re + ak[i]) * zIm + im * zRe;
+            }
+            aRe += ak[0];
 
-        // Power Spectrum Density
-		numRe = aRe*bRe + aIm*bIm;
-		numIm = aRe*bIm - aIm*bRe;
-		den = aRe*aRe + aIm*aIm;
-		Xre = numRe/(den);
-		Xim = numIm/(den);
-        Xk[k] = sigma2 * (Xre*Xre + Xim*Xim);
-	}
+            // Power Spectrum Density
+            numRe = aRe * bRe + aIm * bIm;
+            numIm = aRe * bIm - aIm * bRe;
+            den = aRe * aRe + aIm * aIm;
+            Xre = numRe / (den);
+            Xim = numIm / (den);
+            Xk[k] = sigma2 * (Xre * Xre + Xim * Xim);
+        }
 
-	return Xk;
+        return Xk;
+    }
 }

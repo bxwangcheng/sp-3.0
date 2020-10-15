@@ -46,8 +46,8 @@ using std::complex;
 namespace splab
 {
 
-    inline double acosh( double );
-    inline double asinh( double );
+    double acosh( double );
+    double asinh( double );
 
     double arcsc( double, double );
     void ellipticFun( double, double, double*, double*, double* );

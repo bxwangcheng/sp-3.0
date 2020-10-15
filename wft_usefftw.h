@@ -45,9 +45,9 @@
 
 
 #include <string>
-#include <fftw.h>
-#include <matrix.h>
-#include <utilities.h>
+#include "fftw.h"
+#include "matrix.h"
+#include "utilities.h"
 
 
 namespace splab

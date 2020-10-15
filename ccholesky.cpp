@@ -32,30 +32,31 @@
  *****************************************************************************/
 #include "ccholesky.h"
 
-using namespace splab;
+namespace splab {
 
-/**
- * constructor and destructor
- */
-template<typename Type>
-CCholesky<Type>::CCholesky() : spd(true)
-{
-}
 
-template<typename Type>
-CCholesky<Type>::~CCholesky()
-{
-}
+    /**
+    * constructor and destructor
+    */
+    template<typename Type>
+    CCholesky<Type>::CCholesky() : spd(true)
+    {
+    }
+
+    template<typename Type>
+    CCholesky<Type>::~CCholesky()
+    {
+    }
 
 
 /**
  * return true, if original matrix is symmetric positive-definite.
  */
-template<typename Type>
-inline bool CCholesky<Type>::isSpd() const
-{
-    return spd;
-}
+    template<typename Type>
+    inline bool CCholesky<Type>::isSpd() const
+    {
+        return spd;
+    }
 
 
 /**
@@ -64,123 +65,124 @@ inline bool CCholesky<Type>::isSpd() const
  * factorization is performed. If isspd() evalutate true then
  * the factorizaiton was successful.
  */
-template <typename Type>
-void CCholesky<Type>::dec( const Matrix<Type> &A )
-{
-    int m = A.rows();
-    int n = A.cols();
-
-    spd = (m == n);
-    if( !spd )
-        return;
-
-    L = Matrix<Type>(A.cols(),A.cols());
-
-    // main loop
-    for( int j=0; j<A.rows(); ++j )
+    template <typename Type>
+    void CCholesky<Type>::dec( const Matrix<Type> &A )
     {
-        Type d = 0;
-        spd = spd && (imag(A[j][j]) == 0);
+        int m = A.rows();
+        int n = A.cols();
 
-        for( int k=0; k<j; ++k )
+        spd = (m == n);
+        if( !spd )
+            return;
+
+        L = Matrix<Type>(A.cols(),A.cols());
+
+        // main loop
+        for( int j=0; j<A.rows(); ++j )
         {
-            Type s = 0;
-            for( int i=0; i<k; ++i )
-                s += L[k][i] * conj(L[j][i]);
+            Type d = 0;
+            spd = spd && (imag(A[j][j]) == 0);
 
-            L[j][k] = s = (A[j][k]-s) / L[k][k];
-            d = d + s*conj(s);
-            spd = spd && (A[k][j] == conj(A[j][k]));
+            for( int k=0; k<j; ++k )
+            {
+                Type s = 0;
+                for( int i=0; i<k; ++i )
+                    s += L[k][i] * conj(L[j][i]);
+
+                L[j][k] = s = (A[j][k]-s) / L[k][k];
+                d = d + s*conj(s);
+                spd = spd && (A[k][j] == conj(A[j][k]));
+            }
+
+            d = A[j][j] - d;
+            spd = spd && ( real(d) > 0 );
+
+            L[j][j] = sqrt( real(d) > 0 ? d : 0 );
+            for( int k=j+1; k<A.rows(); ++k )
+                L[j][k] = 0;
         }
-
-        d = A[j][j] - d;
-        spd = spd && ( real(d) > 0 );
-
-        L[j][j] = sqrt( real(d) > 0 ? d : 0 );
-        for( int k=j+1; k<A.rows(); ++k )
-            L[j][k] = 0;
     }
-}
 
 
 /**
  * return the lower triangular factor, L, such that L*L'=A.
  */
-template<typename Type>
-inline Matrix<Type> CCholesky<Type>::getL() const
-{
-    return L;
-}
+    template<typename Type>
+    inline Matrix<Type> CCholesky<Type>::getL() const
+    {
+        return L;
+    }
 
 
 /**
  * Solve a linear system A*x = b, using the previously computed
  * cholesky factorization of A: L*L'.
  */
-template <typename Type>
-Vector<Type> CCholesky<Type>::solve( const Vector<Type> &b )
-{
-    int n = L.rows();
-    if( b.dim() != n )
-        return Vector<Type>();
-
-    Vector<Type> x = b;
-
-    // solve L*y = b
-    for( int k=0; k<n; ++k )
+    template <typename Type>
+    Vector<Type> CCholesky<Type>::solve( const Vector<Type> &b )
     {
-        for( int i=0; i<k; ++i )
-            x[k] -= x[i]*L[k][i];
+        int n = L.rows();
+        if( b.dim() != n )
+            return Vector<Type>();
 
-        x[k] /= L[k][k];
+        Vector<Type> x = b;
+
+        // solve L*y = b
+        for( int k=0; k<n; ++k )
+        {
+            for( int i=0; i<k; ++i )
+                x[k] -= x[i]*L[k][i];
+
+            x[k] /= L[k][k];
+        }
+
+        // solve L^H*x = y
+        for( int k=n-1; k>=0; --k )
+        {
+            for( int i=k+1; i<n; ++i )
+                x[k] -= x[i]*conj(L[i][k]);
+
+            x[k] /= L[k][k];
+        }
+
+        return x;
     }
-
-    // solve L^H*x = y
-    for( int k=n-1; k>=0; --k )
-    {
-        for( int i=k+1; i<n; ++i )
-            x[k] -= x[i]*conj(L[i][k]);
-
-        x[k] /= L[k][k];
-    }
-
-    return x;
-}
 
 
 /**
  * Solve a linear system A*X = B, using the previously computed
  * cholesky factorization of A: L*L'.
  */
-template <typename Type>
-Matrix<Type> CCholesky<Type>::solve( const Matrix<Type> &B )
-{
-    int n = L.rows();
-    if( B.rows() != n )
-        return Matrix<Type>();
+    template <typename Type>
+    Matrix<Type> CCholesky<Type>::solve( const Matrix<Type> &B )
+    {
+        int n = L.rows();
+        if( B.rows() != n )
+            return Matrix<Type>();
 
-    Matrix<Type> X = B;
-    int nx = B.cols();
+        Matrix<Type> X = B;
+        int nx = B.cols();
 
-    // solve L*Y = B
-    for( int j=0; j<nx; ++j )
-        for( int k=0; k<n; ++k )
-        {
-            for( int i=0; i<k; ++i )
-                X[k][j] -= X[i][j]*L[k][i];
+        // solve L*Y = B
+        for( int j=0; j<nx; ++j )
+            for( int k=0; k<n; ++k )
+            {
+                for( int i=0; i<k; ++i )
+                    X[k][j] -= X[i][j]*L[k][i];
 
-            X[k][j] /= L[k][k];
-        }
+                X[k][j] /= L[k][k];
+            }
 
-    // solve L^H*x = y
-    for( int j=0; j<nx; ++j )
-        for( int k=n-1; k>=0; --k )
-        {
-            for( int i=k+1; i<n; ++i )
-                X[k][j] -= X[i][j]*conj(L[i][k]);
+        // solve L^H*x = y
+        for( int j=0; j<nx; ++j )
+            for( int k=n-1; k>=0; --k )
+            {
+                for( int i=k+1; i<n; ++i )
+                    X[k][j] -= X[i][j]*conj(L[i][k]);
 
-            X[k][j] /= L[k][k];
-        }
+                X[k][j] /= L[k][k];
+            }
 
-    return X;
+        return X;
+    }
 }

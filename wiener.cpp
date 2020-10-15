@@ -30,34 +30,33 @@
  *
  * Zhang Ming, 2010-10, Xi'an Jiaotong University.
  *****************************************************************************/
-#include <wiener.h>
+#include "wiener.h"
 
+namespace splab {
 
 /**
  * By given the observed signal "xn" and desired signal "dn", this routine
  * return the coefficients for Wiener filter with "p" order.
  */
-template <typename Type>
-Vector<Type> wienerFilter( const Vector<Type> &xn,
-                           const Vector<Type> &dn, int p )
-{
-    int N = xn.size();
-    assert( dn.size() == N );
+    template<typename Type>
+    Vector<Type> wienerFilter(const Vector<Type> &xn,
+                              const Vector<Type> &dn, int p) {
+        int N = xn.size();
+        assert(dn.size() == N);
 
-    // auto-correlation and corss-correlation
-    Vector<Type> Rxx = fastCorr( xn, "unbiased" );
-    Vector<Type> Rdx = fastCorr( dn, xn, "unbiased" );
+        // auto-correlation and corss-correlation
+        Vector<Type> Rxx = fastCorr(xn, "unbiased");
+        Vector<Type> Rdx = fastCorr(dn, xn, "unbiased");
 
-    Vector<Type> tn(p+1), bn(p+1);
-    for( int i=0; i<=p; ++i )
-    {
-        tn[i] = Rxx[N-1+i];
-        bn[i] = Rdx[N-1+i];
+        Vector<Type> tn(p + 1), bn(p + 1);
+        for (int i = 0; i <= p; ++i) {
+            tn[i] = Rxx[N - 1 + i];
+            bn[i] = Rdx[N - 1 + i];
+        }
+
+        // solving Wiener-Hopf equations
+        return levinson(tn, bn);
     }
-
-    // solving Wiener-Hopf equations
-    return levinson( tn, bn );
-}
 
 
 /**
@@ -65,24 +64,24 @@ Vector<Type> wienerFilter( const Vector<Type> &xn,
  * signal "xn" should be much longer the "p" in order to have a more
  * precision estimation of the Correlation Matrix of "xn".
  */
-template <typename Type>
-Vector<Type> wienerPredictor( const Vector<Type> &xn, int p )
-{
-    int N = xn.size();
+    template<typename Type>
+    Vector<Type> wienerPredictor(const Vector<Type> &xn, int p) {
+        int N = xn.size();
 
-    // auto-correlation and corss-correlation
-    Vector<Type> Rxx = fastCorr( xn, "unbiased" );
-    Vector<Type> tn(p+1), bn(p+1), predictor(p);
+        // auto-correlation and corss-correlation
+        Vector<Type> Rxx = fastCorr(xn, "unbiased");
+        Vector<Type> tn(p + 1), bn(p + 1), predictor(p);
 
-    for( int i=0; i<=p; ++i )
-        tn[i] = Rxx[N-1+i];
-    bn(1) = Type(1.0);
+        for (int i = 0; i <= p; ++i)
+            tn[i] = Rxx[N - 1 + i];
+        bn(1) = Type(1.0);
 
-    // solving Yule-Walker equations
-    Vector<Type> tmp = levinson( tn, bn );
+        // solving Yule-Walker equations
+        Vector<Type> tmp = levinson(tn, bn);
 
-    for( int i=1; i<=p; ++i )
-        predictor(i) = -tmp(i+1) / tmp(1);
+        for (int i = 1; i <= p; ++i)
+            predictor(i) = -tmp(i + 1) / tmp(1);
 
-    return predictor;
+        return predictor;
+    }
 }

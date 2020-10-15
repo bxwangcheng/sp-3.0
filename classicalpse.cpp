@@ -32,19 +32,19 @@
  *****************************************************************************/
 #include "classicalpse.h"
 
-
-/**
- * The correlogram power spectral estimator.
- * xn       : input signal
- * L        : the number of power spectrum density samples
- * return   : spectral estimates at L frequencies:
- *            w = 0, 2*pi/L, ..., 2*pi(L-1)/L
- */
-template <typename Type>
-inline Vector<Type> correlogramPSE( const Vector<Type> &xn, int L )
-{
-    return periodogramPSE( xn, rectangle(xn.size(),Type(1)), L );
-}
+namespace splab {
+    /**
+    * The correlogram power spectral estimator.
+    * xn       : input signal
+    * L        : the number of power spectrum density samples
+    * return   : spectral estimates at L frequencies:
+    *            w = 0, 2*pi/L, ..., 2*pi(L-1)/L
+    */
+    template <typename Type>
+    inline Vector<Type> correlogramPSE( const Vector<Type> &xn, int L )
+    {
+        return periodogramPSE( xn, rectangle(xn.size(),Type(1)), L );
+    }
 
 
 /**
@@ -55,37 +55,37 @@ inline Vector<Type> correlogramPSE( const Vector<Type> &xn, int L )
  * return   : spectral estimates at L frequencies:
  *            w = 0, 2*pi/L, ..., 2*pi(L-1)/L
  */
-template <typename Type>
-Vector<Type> periodogramPSE( const Vector<Type> &xn, const Vector<Type> &wn,
-                             int L )
-{
-    int N = xn.size(),
-	    M = wn.size();
+    template <typename Type>
+    Vector<Type> periodogramPSE( const Vector<Type> &xn, const Vector<Type> &wn,
+                                 int L )
+    {
+        int N = xn.size(),
+                M = wn.size();
 
-	assert( M <= N );
-	if( M < N )
-	{
-	    cerr << "The length of window is smaller than the length of data, ";
-        cerr << "the data will be trucated to the window length!" << endl;
-	}
+        assert( M <= N );
+        if( M < N )
+        {
+            cerr << "The length of window is smaller than the length of data, ";
+            cerr << "the data will be trucated to the window length!" << endl;
+        }
 
-    Vector<Type> wxn(L);
-	if( L >= M )
-	{
-	    for( int i=0; i<M; ++i )
-            wxn[i] = xn[i] * wn[i];
-	}
-	else
-	{
-        cerr << "The FFT points is smaller than the data points, ";
-        cerr << "the data will be trucated to the FFT points!" << endl;
-        for( int i=0; i<L; ++i )
-            wxn[i] = xn[i] * wn[i];
-	}
+        Vector<Type> wxn(L);
+        if( L >= M )
+        {
+            for( int i=0; i<M; ++i )
+                wxn[i] = xn[i] * wn[i];
+        }
+        else
+        {
+            cerr << "The FFT points is smaller than the data points, ";
+            cerr << "the data will be trucated to the FFT points!" << endl;
+            for( int i=0; i<L; ++i )
+                wxn[i] = xn[i] * wn[i];
+        }
 
-	Vector<Type> absXk = abs( fft( wxn ) );
-	return absXk*absXk / Type(M);
-}
+        Vector<Type> absXk = abs( fft( wxn ) );
+        return absXk*absXk / Type(M);
+    }
 
 
 /**
@@ -96,11 +96,11 @@ Vector<Type> periodogramPSE( const Vector<Type> &xn, const Vector<Type> &wn,
  * return   : spectral estimates at L frequencies:
  *            w = 0, 2*pi/L, ..., 2*pi(L-1)/L
  */
-template <typename Type>
-inline Vector<Type> bartlettPSE( const Vector<Type> &xn, int M, int L )
-{
-    return welchPSE( xn, rectangle(M,Type(1)), M, L );
-}
+    template <typename Type>
+    inline Vector<Type> bartlettPSE( const Vector<Type> &xn, int M, int L )
+    {
+        return welchPSE( xn, rectangle(M,Type(1)), M, L );
+    }
 
 
 /**
@@ -112,26 +112,26 @@ inline Vector<Type> bartlettPSE( const Vector<Type> &xn, int M, int L )
  * return   : spectral estimates at L frequencies:
  *            w = 0, 2*pi/L, ..., 2*pi(L-1)/L
  */
-template <typename Type>
-Vector<Type> welchPSE( const Vector<Type> &xn, const Vector<Type> &wn,
-                       int K, int L )
-{
-    int N = xn.size(),
-	    M = wn.size();
+    template <typename Type>
+    Vector<Type> welchPSE( const Vector<Type> &xn, const Vector<Type> &wn,
+                           int K, int L )
+    {
+        int N = xn.size(),
+                M = wn.size();
 
 
-	assert( M < N );
-	assert( K < N );
+        assert( M < N );
+        assert( K < N );
 
-    int S = ( N-M+K )/K;
-	Type P = sum( wn*wn ) / Type(M);
+        int S = ( N-M+K )/K;
+        Type P = sum( wn*wn ) / Type(M);
 
-	Vector<Type> phi(L);
-	for( int i=0; i<S; ++i )
-		phi += periodogramPSE( wkeep(xn,M,i*K), wn, L );
+        Vector<Type> phi(L);
+        for( int i=0; i<S; ++i )
+            phi += periodogramPSE( wkeep(xn,M,i*K), wn, L );
 
-	return phi/(S*P);
-}
+        return phi/(S*P);
+    }
 
 
 /**
@@ -143,29 +143,30 @@ Vector<Type> welchPSE( const Vector<Type> &xn, const Vector<Type> &wn,
  * return   : spectral estimates at L frequencies:
  *            w = 0, 2*pi/L, ..., 2*pi(L-1)/L
  */
-template <typename Type>
-Vector<Type> btPSE( const Vector<Type> &xn, const Vector<Type> &wn, int L )
-{
-    int N = xn.size(),
-	    M = wn.size();
+    template <typename Type>
+    Vector<Type> btPSE( const Vector<Type> &xn, const Vector<Type> &wn, int L )
+    {
+        int N = xn.size(),
+                M = wn.size();
 
-	assert( M <= N );
+        assert( M <= N );
 
-	Vector<Type> Rxx = fastCorr( xn, "biased" );
+        Vector<Type> Rxx = fastCorr( xn, "biased" );
 
-	Vector<Type> wrn(L);
-	if( L >= M )
-	{
-	    for( int i=0; i<M; ++i )
-            wrn[i] = Rxx[N-1+i] * wn[i];
-	}
-	else
-	{
-        cerr << "The FFT points is smaller than the data points, ";
-        cerr << "the data will be trucated to the FFT points!" << endl;
-        for( int i=0; i<L; ++i )
-            wrn[i] = Rxx[N-1+i] * wn[i];
-	}
+        Vector<Type> wrn(L);
+        if( L >= M )
+        {
+            for( int i=0; i<M; ++i )
+                wrn[i] = Rxx[N-1+i] * wn[i];
+        }
+        else
+        {
+            cerr << "The FFT points is smaller than the data points, ";
+            cerr << "the data will be trucated to the FFT points!" << endl;
+            for( int i=0; i<L; ++i )
+                wrn[i] = Rxx[N-1+i] * wn[i];
+        }
 
-	return Type(2)*real(fft(wrn)) - wrn[0];
+        return Type(2)*real(fft(wrn)) - wrn[0];
+    }
 }

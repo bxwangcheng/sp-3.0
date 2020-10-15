@@ -30,42 +30,41 @@
  *
  * Zhang Ming, 2010-03, Xi'an Jiaotong University.
  *****************************************************************************/
-#include <wft_usefftw.h>
+#include "wft_usefftw.h"
 
+namespace splab {
 
 /**
  * Compute WFT of 1D signal("xn") using "wn" as window. The time-frequency
  * coeffitions are stored in "coefs". The column represents time, and row
  * represents frequency.
  */
-template <typename Type>
-Matrix< complex<Type> > wftFFTW( const Vector<Type> &xn,
-                                 const Vector<Type> &wn,
-                                 const string &mode )
-{
-    int Lx = xn.size(),
-        Lw = wn.size();
+    template<typename Type>
+    Matrix<complex<Type> > wftFFTW(const Vector<Type> &xn,
+                                   const Vector<Type> &wn,
+                                   const string &mode) {
+        int Lx = xn.size(),
+                Lw = wn.size();
 
-    // extends the input signal
-    Vector<Type> tmp = wextend( xn, Lw/2, "both", mode );
+        // extends the input signal
+        Vector<Type> tmp = wextend(xn, Lw / 2, "both", mode);
 
-    Matrix< complex<Type> > coefs( Lw/2+1, Lx );
-    Vector<Type> sn( Lw );
-    Vector< complex<Type> > Sk( Lw/2+1 );
+        Matrix<complex<Type> > coefs(Lw / 2 + 1, Lx);
+        Vector<Type> sn(Lw);
+        Vector<complex<Type> > Sk(Lw / 2 + 1);
 
-    for( int i=0; i<Lx; ++i )
-    {
-        // intercept xn by wn function
-        for( int j=0; j<Lw; ++j )
-            sn[j] = tmp[i+j] * wn[j];
+        for (int i = 0; i < Lx; ++i) {
+            // intercept xn by wn function
+            for (int j = 0; j < Lw; ++j)
+                sn[j] = tmp[i + j] * wn[j];
 
-        // compute the Foureier transform
-        fftw( sn, Sk );
-        coefs.setColumn( Sk, i );
+            // compute the Foureier transform
+            fftw(sn, Sk);
+            coefs.setColumn(Sk, i);
+        }
+
+        return coefs;
     }
-
-    return coefs;
-}
 
 
 /**
@@ -73,33 +72,31 @@ Matrix< complex<Type> > wftFFTW( const Vector<Type> &xn,
  * "wn" should be the same as forward transform. The reconstruction signal
  * is stored in "xn".
  */
-template <typename Type>
-Vector<Type> iwftFFTW( const Matrix< complex<Type> > &coefs,
-                       const Vector<Type> &wn )
-{
-    int Lw = wn.size(),
-        Lx = coefs.cols();
+    template<typename Type>
+    Vector<Type> iwftFFTW(const Matrix<complex<Type> > &coefs,
+                          const Vector<Type> &wn) {
+        int Lw = wn.size(),
+                Lx = coefs.cols();
 
-    Vector<Type> xn(Lx);
-    Matrix<Type> tmp( Lw, Lx );
-    Vector< complex<Type> > Sk( Lw/2+1 );
-    Vector<Type> sn( Lw );
+        Vector<Type> xn(Lx);
+        Matrix<Type> tmp(Lw, Lx);
+        Vector<complex<Type> > Sk(Lw / 2 + 1);
+        Vector<Type> sn(Lw);
 
-    // compute the inverse Fourier transform of coefs
-    for( int i=0; i<Lx; ++i )
-    {
-        Sk = coefs.getColumn(i);
-        ifftw( Sk, sn );
+        // compute the inverse Fourier transform of coefs
+        for (int i = 0; i < Lx; ++i) {
+            Sk = coefs.getColumn(i);
+            ifftw(Sk, sn);
 
-        tmp.setColumn( sn, i );
+            tmp.setColumn(sn, i);
+        }
+
+        int mid = Lw / 2;
+        for (int i = 0; i < Lx; ++i)
+            xn[i] = tmp[mid][i] / wn[mid];
+
+        return xn;
     }
-
-    int mid = Lw / 2;
-    for( int i=0; i<Lx; ++i )
-        xn[i] = tmp[mid][i] / wn[mid];
-
-    return xn;
-}
 
 
 //    template <typename Type>
@@ -169,3 +166,4 @@ Vector<Type> iwftFFTW( const Matrix< complex<Type> > &coefs,
 //
 //        return xn;
 //    }
+}

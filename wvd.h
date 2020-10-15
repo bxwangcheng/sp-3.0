@@ -39,11 +39,11 @@
 #define WVD_H
 
 
-#include <vector.h>
-#include <matrix.h>
-#include <fft.h>
-#include <vectormath.h>
-#include <utilities.h>
+#include "vector.h"
+#include "matrix.h"
+#include "fft.h"
+#include "vectormath.h"
+#include "utilities.h"
 
 
 namespace splab

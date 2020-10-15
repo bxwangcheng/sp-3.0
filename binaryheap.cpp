@@ -32,238 +32,238 @@
  *****************************************************************************/
 #include "binaryheap.h"
 
-using namespace splab;
+namespace splab {
+    /**
+    * constructors and destructor
+    */
+    template <typename Type>
+    BinaryHeap<Type>::BinaryHeap( int maxSize )
+    {
+        capacity = maxSize;
 
-/**
- * constructors and destructor
- */
-template <typename Type>
-BinaryHeap<Type>::BinaryHeap( int maxSize )
-{
-    capacity = maxSize;
+        elements = new Type[capacity+1];
+        if( elements == NULL )
+            cerr << "Out of memory!" << endl;
 
-    elements = new Type[capacity+1];
-    if( elements == NULL )
-        cerr << "Out of memory!" << endl;
+        currentSize = 0;
+    }
 
-    currentSize = 0;
-}
+    template <typename Type>
+    BinaryHeap<Type>::BinaryHeap( Type *array, int length )
+    {
+        capacity = ( INITSIZE > length ) ? INITSIZE : length;
 
-template <typename Type>
-BinaryHeap<Type>::BinaryHeap( Type *array, int length )
-{
-    capacity = ( INITSIZE > length ) ? INITSIZE : length;
+        elements = new Type[capacity+1];
+        if( elements == NULL )
+            cerr << "Out of memory!" << endl;
 
-    elements = new Type[capacity+1];
-    if( elements == NULL )
-        cerr << "Out of memory!" << endl;
+        for( int i=0; i<length; ++i )
+            elements[i+1] = array[i];
 
-    for( int i=0; i<length; ++i )
-        elements[i+1] = array[i];
+        currentSize = length;
+        for( int i=currentSize/2; i>0; --i )
+            filterDown( i );
+    }
 
-    currentSize = length;
-    for( int i=currentSize/2; i>0; --i )
-        filterDown( i );
-}
+    template <typename Type>
+    BinaryHeap<Type>::BinaryHeap( const BinaryHeap<Type> &rhs )
+    {
+        currentSize = rhs.currentSize;
+        capacity = rhs.capacity;
 
-template <typename Type>
-BinaryHeap<Type>::BinaryHeap( const BinaryHeap<Type> &rhs )
-{
-    currentSize = rhs.currentSize;
-    capacity = rhs.capacity;
+        elements = new Type[capacity];
+        for( int i=1; i<=currentSize; ++i )
+            elements[i] = rhs.elements[i];
+    }
 
-    elements = new Type[capacity];
-    for( int i=1; i<=currentSize; ++i )
-        elements[i] = rhs.elements[i];
-}
-
-template <typename Type>
-BinaryHeap<Type>::~BinaryHeap()
-{
-    currentSize = 0;
-    capacity = INITSIZE;
-    delete []elements;
-}
+    template <typename Type>
+    BinaryHeap<Type>::~BinaryHeap()
+    {
+        currentSize = 0;
+        capacity = INITSIZE;
+        delete []elements;
+    }
 
 
 /**
  * Overload copy assignment operation.
  */
-template <typename Type>
-BinaryHeap<Type>& BinaryHeap<Type>::operator=( const BinaryHeap<Type> &rhs )
-{
-    currentSize = rhs.currentSize;
-    capacity = rhs.capacity;
+    template <typename Type>
+    BinaryHeap<Type>& BinaryHeap<Type>::operator=( const BinaryHeap<Type> &rhs )
+    {
+        currentSize = rhs.currentSize;
+        capacity = rhs.capacity;
 
-    delete []elements;
-    elements = new Type[capacity];
-    for( int i=1; i<=currentSize; ++i )
-        elements[i] = rhs.elements[i];
+        delete []elements;
+        elements = new Type[capacity];
+        for( int i=1; i<=currentSize; ++i )
+            elements[i] = rhs.elements[i];
 
-    return *this;
-}
+        return *this;
+    }
 
 
 /**
  * If the heap is empty, return true.
  */
-template <typename Type>
-inline bool BinaryHeap<Type>::isEmpty() const
-{
-    return currentSize == 0;
-}
+    template <typename Type>
+    inline bool BinaryHeap<Type>::isEmpty() const
+    {
+        return currentSize == 0;
+    }
 
 
 /**
  * Make the heap empty.
  */
-template <typename Type>
-inline void BinaryHeap<Type>::makeEmpty()
-{
-    currentSize = 0;
-}
+    template <typename Type>
+    inline void BinaryHeap<Type>::makeEmpty()
+    {
+        currentSize = 0;
+    }
 
 
 /**
  * Return size of the heap.
  */
-template <typename Type>
-inline int BinaryHeap<Type>::size() const
-{
-    return currentSize;
-}
+    template <typename Type>
+    inline int BinaryHeap<Type>::size() const
+    {
+        return currentSize;
+    }
 
 
 /**
  * Insert item x, allowing duplicates.
  */
-template <typename Type>
-inline void BinaryHeap<Type>::insert( const Type &x )
-{
-    if( currentSize == capacity )
-        handleOverflow();
+    template <typename Type>
+    inline void BinaryHeap<Type>::insert( const Type &x )
+    {
+        if( currentSize == capacity )
+            handleOverflow();
 
-    elements[++currentSize] = x;
-    filterUp( currentSize );
-}
+        elements[++currentSize] = x;
+        filterUp( currentSize );
+    }
 
 
 /**
  * Find the smallest item in the heap.
  */
-template <typename Type>
-inline void BinaryHeap<Type>::findMin( Type &x )
-{
-    if( !isEmpty() )
-        x = elements[1];
-    else
-        handleUnderflow();
-}
+    template <typename Type>
+    inline void BinaryHeap<Type>::findMin( Type &x )
+    {
+        if( !isEmpty() )
+            x = elements[1];
+        else
+            handleUnderflow();
+    }
 
 
 /**
  * Remove the minimum item.
  */
-template <typename Type>
-inline void BinaryHeap<Type>::deleteMin()
-{
-    if( !isEmpty() )
+    template <typename Type>
+    inline void BinaryHeap<Type>::deleteMin()
     {
-        elements[1] = elements[currentSize--];
-        filterDown( 1 );
+        if( !isEmpty() )
+        {
+            elements[1] = elements[currentSize--];
+            filterDown( 1 );
+        }
+        else
+            handleUnderflow();
     }
-    else
-        handleUnderflow();
-}
 
 
 /**
  * Remove the minimum item and place it in minItem.
  */
-template <typename Type>
-inline void BinaryHeap<Type>::deleteMin( Type &minItem )
-{
-    if( !isEmpty() )
+    template <typename Type>
+    inline void BinaryHeap<Type>::deleteMin( Type &minItem )
     {
-        minItem = elements[1];
-        elements[1] = elements[currentSize--];
-        filterDown( 1 );
+        if( !isEmpty() )
+        {
+            minItem = elements[1];
+            elements[1] = elements[currentSize--];
+            filterDown( 1 );
+        }
+        else
+            handleUnderflow();
     }
-    else
-        handleUnderflow();
-}
 
 
 /**
  * Percolate down the heap, begin at "hole".
  */
-template <typename Type>
-void BinaryHeap<Type>::filterDown( int hole )
-{
-    int child;
-    Type tmp = elements[hole];
-
-    for( ; 2*hole<=currentSize; hole=child )
+    template <typename Type>
+    void BinaryHeap<Type>::filterDown( int hole )
     {
-        child = 2*hole;
+        int child;
+        Type tmp = elements[hole];
 
-        if( child != currentSize && elements[child+1] < elements[child] )
-            child++;
+        for( ; 2*hole<=currentSize; hole=child )
+        {
+            child = 2*hole;
 
-        if( elements[child] < tmp )
-            elements[hole] = elements[child];
-        else
-            break;
+            if( child != currentSize && elements[child+1] < elements[child] )
+                child++;
+
+            if( elements[child] < tmp )
+                elements[hole] = elements[child];
+            else
+                break;
+        }
+
+        elements[hole] = tmp;
     }
-
-    elements[hole] = tmp;
-}
 
 
 /**
  * Percolate up the heap, begin at "hole".
  */
-template <typename Type>
-void BinaryHeap<Type>::filterUp( int hole )
-{
-    Type tmp = elements[hole];
+    template <typename Type>
+    void BinaryHeap<Type>::filterUp( int hole )
+    {
+        Type tmp = elements[hole];
 
-    for( ; hole>1 && tmp<elements[hole/2]; hole/=2 )
-        elements[hole] = elements[hole/2];
+        for( ; hole>1 && tmp<elements[hole/2]; hole/=2 )
+            elements[hole] = elements[hole/2];
 
-    elements[hole] = tmp;
-}
+        elements[hole] = tmp;
+    }
 
 
 /**
  * If the capability of the heap exceeds the initial size, make it double.
  */
-template <typename Type>
-void BinaryHeap<Type>::handleOverflow()
-{
-    capacity = EXTFACTOR * capacity;
-
-    Type *newArray = new Type[capacity+1];
-    if( newArray == NULL )
+    template <typename Type>
+    void BinaryHeap<Type>::handleOverflow()
     {
-        cerr << "Out of memory!" << endl;
-        exit(1);
+        capacity = EXTFACTOR * capacity;
+
+        Type *newArray = new Type[capacity+1];
+        if( newArray == NULL )
+        {
+            cerr << "Out of memory!" << endl;
+            exit(1);
+        }
+
+        for( int i=1; i<=currentSize; ++i )
+            newArray[i] = elements[i];
+
+        delete []elements;
+        elements = newArray;
     }
-
-    for( int i=1; i<=currentSize; ++i )
-        newArray[i] = elements[i];
-
-    delete []elements;
-    elements = newArray;
-};
 
 
 /**
  * Handle the error of get element from an empty heap.
  */
-template <typename Type>
-inline void BinaryHeap<Type>::handleUnderflow()
-{
-    cerr << "The heap is empty!" << endl << endl;
-    exit( 1 );
-};
+    template <typename Type>
+    inline void BinaryHeap<Type>::handleUnderflow()
+    {
+        cerr << "The heap is empty!" << endl << endl;
+        exit( 1 );
+    }
+}

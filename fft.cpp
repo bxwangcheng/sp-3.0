@@ -32,126 +32,108 @@
  *****************************************************************************/
 #include "fft.h"
 
-using namespace splab;
+namespace splab {
 
 /**
  * Forward FFT algorithm.
  */
-template<typename Type>
-inline Vector< complex<Type> > fft( const Vector<Type> &xn )
-{
-    return fftr2c( xn );
-}
+    template<typename Type>
+    inline Vector<complex<Type> > fft(const Vector<Type> &xn) {
+        return fftr2c(xn);
+    }
 
-template<typename Type>
-inline Vector< complex<Type> > fft( const Vector< complex<Type> > &xn )
-{
-    return fftc2c( xn );
-}
+    template<typename Type>
+    inline Vector<complex<Type> > fft(const Vector<complex<Type> > &xn) {
+        return fftc2c(xn);
+    }
 
 
 /**
  * Inverse FFT algorithm.
  */
-template<typename Type>
-inline Vector< complex<Type> > ifft( const Vector< complex<Type> > &Xk )
-{
-    return ifftc2c( Xk );
-}
+    template<typename Type>
+    inline Vector<complex<Type> > ifft(const Vector<complex<Type> > &Xk) {
+        return ifftc2c(Xk);
+    }
 
 
 /**
  * Real to complex DFT of 1D signal.
  */
-template<typename Type>
-inline Vector< complex<Type> > fftr2c( const Vector<Type> &xn )
-{
-    Vector< complex<Type> > Xk( xn.size() );
+    template<typename Type>
+    inline Vector<complex<Type> > fftr2c(const Vector<Type> &xn) {
+        Vector<complex<Type> > Xk(xn.size());
 
-    if( isPower2(xn.size())  )
-    {
-        FFTMR<Type> dft;
-        dft.fft( xn, Xk );
-    }
-    else
-    {
-        FFTPF<Type> dft;
-        dft.fft( xn, Xk );
-    }
+        if (isPower2(xn.size())) {
+            FFTMR<Type> dft;
+            dft.fft(xn, Xk);
+        } else {
+            FFTPF<Type> dft;
+            dft.fft(xn, Xk);
+        }
 
-    return Xk;
-}
+        return Xk;
+    }
 
 
 /**
  * Complex to complex DFT of 1D signal.
  */
-template<typename Type>
-inline Vector< complex<Type> > fftc2c( const Vector< complex<Type> > &xn )
-{
-    Vector< complex<Type> > Xk( xn.size() );
+    template<typename Type>
+    inline Vector<complex<Type> > fftc2c(const Vector<complex<Type> > &xn) {
+        Vector<complex<Type> > Xk(xn.size());
 
-    if( isPower2(xn.size())  )
-    {
-        for( int i=0; i<xn.size(); ++i )
-            Xk[i] = xn[i];
-        FFTMR<Type> dft;
-        dft.fft( Xk );
-    }
-    else
-    {
-        FFTPF<Type> dft;
-        dft.fft( xn, Xk );
-    }
+        if (isPower2(xn.size())) {
+            for (int i = 0; i < xn.size(); ++i)
+                Xk[i] = xn[i];
+            FFTMR<Type> dft;
+            dft.fft(Xk);
+        } else {
+            FFTPF<Type> dft;
+            dft.fft(xn, Xk);
+        }
 
-    return Xk;
-}
+        return Xk;
+    }
 
 
 /**
  * Complex to real IDFT of 1D signal.
  */
-template<typename Type>
-inline Vector<Type> ifftc2r( const Vector< complex<Type> > &Xk )
-{
-    Vector<Type> xn( Xk.size() );
+    template<typename Type>
+    inline Vector<Type> ifftc2r(const Vector<complex<Type> > &Xk) {
+        Vector<Type> xn(Xk.size());
 
-    if( isPower2(xn.size())  )
-    {
-        Vector< complex<Type> > tmp( Xk );
-        FFTMR<Type> dft;
-        dft.ifft( tmp, xn );
-    }
-    else
-    {
-        FFTPF<Type> dft;
-        dft.ifft( Xk, xn );
-    }
+        if (isPower2(xn.size())) {
+            Vector<complex<Type> > tmp(Xk);
+            FFTMR<Type> dft;
+            dft.ifft(tmp, xn);
+        } else {
+            FFTPF<Type> dft;
+            dft.ifft(Xk, xn);
+        }
 
-    return xn;
-}
+        return xn;
+    }
 
 
 /**
  * Complex to complex IDFT of 1D signal.
  */
-template<typename Type>
-inline Vector< complex<Type> > ifftc2c( const Vector< complex<Type> > &Xk )
-{
-    Vector< complex<Type> > xn( Xk.size() );
+    template<typename Type>
+    inline Vector<complex<Type> > ifftc2c(const Vector<complex<Type> > &Xk) {
+        Vector<complex<Type> > xn(Xk.size());
 
-    if( isPower2(xn.size())  )
-    {
-        for( int i=0; i<xn.size(); ++i )
-            xn[i] = Xk[i];
-        FFTMR<Type> dft;
-        dft.ifft( xn );
-    }
-    else
-    {
-        FFTPF<Type> dft;
-        dft.ifft( Xk, xn );
-    }
+        if (isPower2(xn.size())) {
+            for (int i = 0; i < xn.size(); ++i)
+                xn[i] = Xk[i];
+            FFTMR<Type> dft;
+            dft.ifft(xn);
+        } else {
+            FFTPF<Type> dft;
+            dft.ifft(Xk, xn);
+        }
 
-    return xn;
+        return xn;
+    }
 }

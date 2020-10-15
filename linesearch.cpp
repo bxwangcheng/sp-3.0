@@ -32,103 +32,92 @@
  *****************************************************************************/
 #include "linesearch.h"
 
-using namespace splab;
+namespace splab {
 
 /**
  * constructors and destructor
  */
-template <typename Dtype, typename Ftype>
-LineSearch<Dtype, Ftype>::LineSearch()
-{
-    funcNum = 0;
-    success = true;
-}
+    template<typename Dtype, typename Ftype>
+    LineSearch<Dtype, Ftype>::LineSearch() {
+        funcNum = 0;
+        success = true;
+    }
 
-template <typename Dtype, typename Ftype>
-LineSearch<Dtype, Ftype>::~LineSearch()
-{
-}
+    template<typename Dtype, typename Ftype>
+    LineSearch<Dtype, Ftype>::~LineSearch() {
+    }
 
 
 /**
  * Finding the step size at point "xk" in direction of "dk" of function
  * "func". The default heuristics number is "maxItr=10".
  */
-template <typename Dtype, typename Ftype>
-Dtype LineSearch<Dtype, Ftype>::getStep( Ftype &func, Vector<Dtype> &xk,
-                                         Vector<Dtype> &dk, int maxItr )
-{
-    // Set line search parameters that everyone uses.
-    Dtype mu = Dtype(0.001),
-          kUp = Dtype(0.5),
-          kLow = Dtype(0.1),
-          alpha = Dtype(1.0),
-          alphaMin,
-          alphaMax;
+    template<typename Dtype, typename Ftype>
+    Dtype LineSearch<Dtype, Ftype>::getStep(Ftype &func, Vector<Dtype> &xk,
+                                            Vector<Dtype> &dk, int maxItr) {
+        // Set line search parameters that everyone uses.
+        Dtype mu = Dtype(0.001),
+                kUp = Dtype(0.5),
+                kLow = Dtype(0.1),
+                alpha = Dtype(1.0),
+                alphaMin,
+                alphaMax;
 
-    Dtype fNew,
-          fk = func(xk);
+        Dtype fNew,
+                fk = func(xk);
 
-    Vector<Dtype> xNew,
-                  gk = func.grad(xk);
+        Vector<Dtype> xNew,
+                gk = func.grad(xk);
 
-    Dtype gd = dotProd( gk, dk );
+        Dtype gd = dotProd(gk, dk);
 
-    for( int i=0; i<maxItr; ++i )
-    {
-        xNew = xk + alpha*dk;
-        fNew = func(xNew);
-        funcNum++;
+        for (int i = 0; i < maxItr; ++i) {
+            xNew = xk + alpha * dk;
+            fNew = func(xNew);
+            funcNum++;
 
-        if( fNew < fk+mu*alpha*gd )
-        {
+            if (fNew < fk + mu * alpha * gd) {
+                success = true;
+                return alpha;
+            } else {
+                alphaMin = kLow * alpha;
+                alphaMax = kUp * alpha;
+
+                // Compute the step by using quadratic polynomial interpolation.
+                alpha = Dtype(-0.5) * alpha * alpha * gd / (fNew - fk - alpha * gd);
+
+                // bound checking
+                if (alpha < alphaMin)
+                    alpha = alphaMin;
+                else if (alpha > alphaMax)
+                    alpha = alphaMax;
+            }
+        }
+
+        if (fNew >= fk) {
+            success = false;
+            return Dtype(0.0);
+        } else {
             success = true;
             return alpha;
         }
-        else
-        {
-            alphaMin = kLow*alpha;
-            alphaMax = kUp*alpha;
-
-            // Compute the step by using quadratic polynomial interpolation.
-            alpha = Dtype(-0.5)*alpha*alpha*gd / ( fNew-fk-alpha*gd );
-
-            // bound checking
-            if( alpha < alphaMin )
-                alpha = alphaMin;
-            else if( alpha > alphaMax )
-                alpha = alphaMax;
-        }
     }
-
-    if( fNew>=fk )
-    {
-        success = false;
-        return Dtype(0.0);
-    }
-    else
-    {
-        success = true;
-        return alpha;
-    }
-}
 
 
 /**
  * Get the number of objective function's calculation.
  */
-template <typename Dtype, typename Ftype>
-inline int LineSearch<Dtype, Ftype>::getFuncNum() const
-{
-    return funcNum;
-}
+    template<typename Dtype, typename Ftype>
+    inline int LineSearch<Dtype, Ftype>::getFuncNum() const {
+        return funcNum;
+    }
 
 
 /**
  * Judgement whether the optimal solution is found or not.
  */
-template <typename Dtype, typename Ftype>
-inline bool LineSearch<Dtype, Ftype>::isSuccess() const
-{
-    return success;
+    template<typename Dtype, typename Ftype>
+    inline bool LineSearch<Dtype, Ftype>::isSuccess() const {
+        return success;
+    }
 }

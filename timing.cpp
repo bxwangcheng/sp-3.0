@@ -30,52 +30,48 @@
  *
  * Zhang Ming, 2010-01, Xi'an Jiaotong University.
  *****************************************************************************/
-#include <timing.h>
+#include "timing.h"
 
+namespace splab {
 
 /**
  * constructor and destructor
  */
-Timing::Timing() : running(false), startTime(0), total(0)
-{
-}
+    Timing::Timing() : running(false), startTime(0), total(0) {
+    }
 
-Timing::~Timing()
-{
-}
+    Timing::~Timing() {
+    }
 
 
 /**
  * timing start
  */
-inline void Timing::start()
-{
-	running = true;
-	total = 0;
-	startTime = seconds();
-}
+    inline void Timing::start() {
+        running = true;
+        total = 0;
+        startTime = seconds();
+    }
 
 
 /**
  * timing stop
  */
-inline void Timing::stop()
-{
-	if( running )
-	{
-		 total += ( seconds() - startTime );
-		 running = false;
-	}
-}
+    inline void Timing::stop() {
+        if (running) {
+            total += (seconds() - startTime);
+            running = false;
+        }
+    }
 
 
 /**
  * Get the time between start() and stop().
  */
-inline double Timing::read()
-{
-	if( running )
-		stop();
+    inline double Timing::read() {
+        if (running)
+            stop();
 
-	return total;
+        return total;
+    }
 }
